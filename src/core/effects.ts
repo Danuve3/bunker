@@ -70,7 +70,8 @@ function applyEffect(s: GameState, rng: Rng, e: EffectSpec) {
       break;
     }
     case 'wear':
-      for (const m of s.bunker.modules) if (!e.type || m.type === e.type) m.condition = Math.max(0, m.condition - e.n);
+      // n negativo = reparación
+      for (const m of s.bunker.modules) if (!e.type || m.type === e.type) m.condition = clamp(m.condition - e.n, 0, 1);
       break;
     case 'chance': {
       const ok = rng.chance(e.p);

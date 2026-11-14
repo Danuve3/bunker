@@ -4,6 +4,7 @@
  */
 import type { ClimateVariant, EffectSpec, ModuleType, ThreatId } from '../core/types';
 import type { SourceId } from './sources';
+import { CLIMATE_EVENTS, COLLAPSE_EVENTS, EXTRA_BOSSES, GENERIC_EVENTS, NUCLEAR_EVENTS, PANDEMIC_EVENTS, SECONDARY_EVENTS } from './events';
 
 export interface CardCond {
   hasModule?: ModuleType;
@@ -13,6 +14,7 @@ export interface CardCond {
   maxMorale?: number;
   minFood?: number; // kcal en despensa
   gridUp?: boolean;
+  minDose?: number; // mSv de dosis aguda
 }
 
 export interface CardChoice {
@@ -40,7 +42,7 @@ export interface CardData {
 }
 
 // ─── Crisis finales de fase ("jefes") ────────────────────────────────────────
-export const BOSSES: CardData[] = [
+const BASE_BOSSES: CardData[] = [
   {
     id: 'boss_lluvia_negra',
     kind: 'boss',
@@ -112,8 +114,10 @@ export const BOSSES: CardData[] = [
   },
 ];
 
-// ─── Eventos (pool inicial; se amplía en el hito 4) ──────────────────────────
-export const EVENTS: CardData[] = [
+export const BOSSES: CardData[] = [...BASE_BOSSES, ...EXTRA_BOSSES];
+
+// ─── Eventos ─────────────────────────────────────────────────────────────────
+const BASE_EVENTS: CardData[] = [
   {
     id: 'ev_golpes',
     kind: 'event',
@@ -234,6 +238,8 @@ export const EVENTS: CardData[] = [
   },
 ];
 
+export const EVENTS: CardData[] = [...BASE_EVENTS, ...GENERIC_EVENTS, ...NUCLEAR_EVENTS, ...PANDEMIC_EVENTS, ...COLLAPSE_EVENTS, ...CLIMATE_EVENTS];
+
 // ─── Encuentros en expediciones ─────────────────────────────────────────────
 // Conflicto abstracto: nada de detalles sobre armas. Se resuelve con decisiones.
 export const ENCOUNTERS: CardData[] = [
@@ -331,4 +337,4 @@ export const ENCOUNTERS: CardData[] = [
   },
 ];
 
-export const ALL_CARDS: Record<string, CardData> = Object.fromEntries([...BOSSES, ...EVENTS, ...ENCOUNTERS].map((c) => [c.id, c]));
+export const ALL_CARDS: Record<string, CardData> = Object.fromEntries([...BOSSES, ...EVENTS, ...ENCOUNTERS, ...SECONDARY_EVENTS].map((c) => [c.id, c]));

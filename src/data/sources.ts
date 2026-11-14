@@ -129,6 +129,26 @@ export const SOURCES = {
     title: 'Botulism: no consumir latas abombadas, con fugas o que salpican al abrir',
     url: 'https://www.cdc.gov/botulism/prevention/',
   },
+  who_damp: {
+    org: 'OMS',
+    title: 'WHO guidelines for indoor air quality: dampness and mould (2009)',
+    url: 'https://www.who.int/publications/i/item/9789289041683',
+  },
+  nejm_surfaces: {
+    org: 'van Doremalen et al., NEJM',
+    title: 'Aerosol and Surface Stability of SARS-CoV-2 (2020)',
+    url: 'https://www.nejm.org/doi/full/10.1056/NEJMc2004973',
+  },
+  who_myths: {
+    org: 'OMS',
+    title: 'Advice for the public: mythbusters',
+    url: 'https://www.who.int/emergencies/diseases/novel-coronavirus-2019/advice-for-public/myth-busters',
+  },
+  who_cholera: {
+    org: 'OMS',
+    title: 'Cholera: hoja informativa',
+    url: 'https://www.who.int/news-room/fact-sheets/detail/cholera',
+  },
   ine_precios: {
     org: 'Precios orientativos de mercado en España (2025)',
     title: 'Supermercados, ferreterías y gasolineras: valores medios aproximados',

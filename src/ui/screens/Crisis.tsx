@@ -125,7 +125,8 @@ export function CrisisScreen({ s }: { s: GameState }) {
   const hasGen = has(s.bunker, 'generador');
   const hasFan = has(s.bunker, 'ventilacion');
   const proj = s.bunker.project;
-  const threatName = s.threat.variant ? C.variants[s.threat.variant].name : C.threats[s.threat.primary].name;
+  const sec = s.threat.secondary && s.phase >= (s.threat.secondaryFromPhase ?? 99) ? s.threat.secondary : null;
+  const threatName = (s.threat.variant ? C.variants[s.threat.variant].name : C.threats[s.threat.primary].name) + (sec ? ` + ${C.threats[sec].name}` : '');
   return (
     <div class="screen crisis">
       <TopBar

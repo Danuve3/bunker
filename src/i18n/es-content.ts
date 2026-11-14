@@ -2,6 +2,8 @@
  * Textos de contenido en español: artículos, módulos, amenazas, cartas y diario.
  * Las claves coinciden con los ids de src/data. Para traducir, duplicar este archivo.
  */
+import { eventTexts } from './es-events';
+
 export const content = {
   items: {
     garrafa_agua: { name: 'Garrafa de agua 8 L', desc: 'Agua embotellada. FEMA recomienda ~4 L por persona y día.' },
@@ -189,6 +191,7 @@ export const content = {
 
   /** Cartas: título, texto, opciones (label + resultado) y "Dato real". */
   cards: {
+    ...eventTexts,
     boss_lluvia_negra: {
       title: 'Lluvia negra',
       text: 'El viento ha rolado. Por el respiradero oyes el golpeteo de una lluvia espesa y oscura: una segunda nube está depositando más partículas radiactivas sobre la zona.',
@@ -498,6 +501,10 @@ export const content = {
     achique: 'Contienes el agua, pero se moja parte de la comida.',
     tormenta_ok: 'Los equipos sobreviven a la tormenta.',
     monoxido: 'Mareo, náuseas, dolor de cabeza: intoxicación leve por monóxido de carbono.',
+    secundaria: {
+      colapso: 'Nueva amenaza: colapso del orden. Más saqueadores, y ni luz ni agua corriente.',
+      pandemia: 'Nueva amenaza: epidemia. Salir es más peligroso.',
+    },
     evento: {
       nuclear: 'Un destello en el horizonte. Las sirenas. Llega la lluvia radiactiva.',
       pandemia: 'Confinamiento total decretado. Las calles se vacían.',

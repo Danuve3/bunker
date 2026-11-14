@@ -1,7 +1,7 @@
 /** Creación de una partida nueva a partir de una semilla. */
 import { AIR, FALLOUT, GRID, THERMAL } from '../data/environment';
 import { MORALE } from '../data/physiology';
-import { CLIMATE, CLIMATE_VARIANTS, THREATS, THREAT_IDS, phaseLength } from '../data/threats';
+import { CLIMATE, CLIMATE_VARIANTS, SECONDARY, SECONDARY_CHANCE, SECONDARY_PHASES, THREATS, THREAT_IDS, phaseLength } from '../data/threats';
 import { Rng } from './rng';
 import { generateMap } from './expedition';
 import type { Bunker, CellKind, DayPlan, GameMode, GameState, ThreatId, ThreatState } from './types';
@@ -72,6 +72,10 @@ function makeThreat(rng: Rng, primary: ThreatId, startH: number): { threat: Thre
     waterMainsUntilH: eventH + rangeInt(rng, data.waterMainsDownAfterH),
     mods: [],
   };
+  if (rng.chance(SECONDARY_CHANCE)) {
+    threat.secondary = SECONDARY[variant ?? primary];
+    threat.secondaryFromPhase = rng.int(SECONDARY_PHASES[0], SECONDARY_PHASES[1]);
+  }
   if (variant === 'inundacion') {
     // La crecida inicial: agua en los niveles más bajos durante 48 h.
     threat.mods.push({ fromH: eventH, toH: eventH + 48, kind: 'flood', value: 1 });

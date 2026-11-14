@@ -2,7 +2,7 @@
 import { BLEACH, GAS, CONSUMPTION } from '../data/items';
 import { HYDRO, MAINTENANCE, MODULES, STORAGE } from '../data/modules';
 import { CARE, MORALE, WATER } from '../data/physiology';
-import { EVENT_CHANCE, phaseLength } from '../data/threats';
+import { EVENT_CHANCE, THREATS, phaseLength } from '../data/threats';
 import { built, doorStrength, has, hasLivingSpace, storageInfo, working } from './bunker';
 import { drawBoss, drawEvent, presentCard } from './cards';
 import { applyEffects } from './effects';
@@ -300,4 +300,20 @@ export function nextPhase(s: GameState) {
   s.phaseLength = phaseLength(s.phase);
   s.stage = 'crisis';
   log(s, 'log.fase_inicio', { phase: s.phase, days: s.phaseLength });
+  const t = s.threat;
+  if (t.secondary && t.secondaryFromPhase === s.phase) activateSecondary(s);
+}
+
+/** La amenaza secundaria se suma a la principal: presiones, red y agua. */
+function activateSecondary(s: GameState) {
+  const t = s.threat;
+  const sec = THREATS[t.secondary!];
+  t.looterPressure = Math.max(t.looterPressure, sec.looterPressure);
+  t.infectionPressure = Math.max(t.infectionPressure, sec.infectionPressure);
+  if (t.secondary === 'colapso') {
+    t.gridUntilH = Math.min(t.gridUntilH, s.h);
+    t.waterMainsUntilH = Math.min(t.waterMainsUntilH, s.h);
+  }
+  log(s, `log.secundaria.${t.secondary}`, undefined, 'bad');
+  s.cardQueue.push(`sec_${t.secondary}`);
 }

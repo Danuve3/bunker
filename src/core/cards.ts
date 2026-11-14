@@ -30,6 +30,7 @@ export function cardEligible(s: GameState, c: CardData): boolean {
   if (k.maxMorale !== undefined && s.survivor.morale > k.maxMorale) return false;
   if (k.minFood && totalKcal(s) < k.minFood) return false;
   if (k.gridUp !== undefined && gridUp(s) !== k.gridUp) return false;
+  if (k.minDose && s.survivor.acuteDoseMSv < k.minDose) return false;
   return true;
 }
 

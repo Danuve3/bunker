@@ -78,3 +78,19 @@ export const SCORE = {
   perBoss: 50,
   lowDoseBonus: 50, // terminar con < 100 mSv en amenaza nuclear
 } as const;
+
+/**
+ * Amenaza secundaria encadenada con lógica causal. Aparece a partir de la fase 3 o 4.
+ * nuclear → colapso del orden; pandemia → colapso; colapso → epidemia por falta de saneamiento;
+ * frío y tormenta solar → apagón prolongado y saqueos; inundación → epidemia de origen hídrico.
+ */
+export const SECONDARY: Record<string, ThreatId> = {
+  nuclear: 'colapso',
+  pandemia: 'colapso',
+  colapso: 'pandemia',
+  frio: 'colapso',
+  tormenta_solar: 'colapso',
+  inundacion: 'pandemia',
+};
+export const SECONDARY_CHANCE = 0.75;
+export const SECONDARY_PHASES: [number, number] = [3, 4];
