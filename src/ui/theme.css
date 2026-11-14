@@ -333,3 +333,13 @@ h3 { font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.08em; colo
 @media (min-width: 420px) {
   .chips { grid-template-columns: repeat(3, 1fr); }
 }
+
+/* ── Mapa ── */
+.map { width: 100%; max-width: 360px; margin: 0 auto; display: block; border-radius: 12px; border: 1px solid var(--line); }
+.map-pin { cursor: pointer; }
+.map-ring { fill: #6e604f; font-size: 9px; }
+.map-label { fill: var(--accent); font-size: 10px; font-weight: 700; }
+.loc-info { display: flex; flex-direction: column; gap: 4px; }
+.loc-info p { margin: 0; }
+.loc-info .seg { grid-auto-columns: auto; overflow-x: auto; }
+.loc-info .seg button { padding: 0 8px; font-size: 0.8rem; }

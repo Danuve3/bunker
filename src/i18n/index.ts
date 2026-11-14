@@ -27,6 +27,33 @@ function get(obj: unknown, path: string[]): unknown {
 export const itemName = (id: string) => C.inv[id] ?? C.items[id]?.name ?? id;
 export const moduleName = (id: string) => C.modules[id]?.name ?? id;
 
+/** "agua:12;food:3000" → "12 L de agua potable, 3.000 kcal de comida". */
+export function lootText(loot: string): string {
+  return loot
+    .split(';')
+    .filter(Boolean)
+    .map((pair) => {
+      const [id, n] = pair.split(':');
+      const v = Number(n);
+      if (id === 'food') return `${num(v)} kcal de comida`;
+      if (id === 'agua') return `${num(v)} L de agua potable`;
+      if (id === 'aguaBruta') return `${num(v)} L de agua sin tratar`;
+      if (id === 'diesel') return `${num(v)} L de diésel`;
+      if (id === 'lejia_ml') return `${num(v)} mL de lejía`;
+      return `${itemName(id)} ×${num(v)}`;
+    })
+    .join(', ');
+}
+
+/** Nombre de un lugar del mapa a partir de su id (tipo + índice). */
+export function placeName(id: string, variant?: number): string {
+  const type = id.replace(/\d+$/, '');
+  const p = C.places[type];
+  if (!p) return id;
+  const i = variant ?? Number(id.match(/\d+$/)?.[0] ?? 0);
+  return p.names[i % p.names.length];
+}
+
 /** Traduce los parámetros que son ids (módulo, artículo, causa…). */
 function localizeParams(p?: Record<string, string | number>): Record<string, string | number> | undefined {
   if (!p) return p;
@@ -37,6 +64,8 @@ function localizeParams(p?: Record<string, string | number>): Record<string, str
   if (typeof p.kind === 'string') out.kind = C.infections[p.kind] ?? C.projects[p.kind] ?? p.kind;
   if (typeof p.shop === 'string') out.shop = C.shops[p.shop]?.name ?? p.shop;
   if (typeof p.method === 'string') out.method = C.methods[p.method] ?? p.method;
+  if (typeof p.place === 'string') out.place = placeName(p.place);
+  if (typeof p.loot === 'string') out.loot = lootText(p.loot);
   return out;
 }
 

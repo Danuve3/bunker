@@ -6,7 +6,8 @@
 import type { ShopId } from '../data/items';
 import { SCORE } from '../data/threats';
 import { runBossDay, runDay, nextPhase } from './day';
-import { resolveChoice } from './cards';
+import { presentCard, resolveChoice } from './cards';
+import { ALL_CARDS } from '../data/cards';
 import { log } from './log';
 import { buy, prepAction, workPrep, hoursLeft, type PrepActionId } from './prep';
 import { cancelProject, startProject } from './projects';
@@ -63,11 +64,21 @@ export function dispatch(state: GameState, a: Action): GameState {
         if (resolveChoice(s, rng, a.choice)) {
           if (wasBoss) runBossDay(s, rng);
           else s.stage = 'crisis';
+          // Cartas en cola (p. ej., un encuentro y después la crisis final)
+          const next = s.cardQueue.shift();
+          if (next && (s.stage as string) !== 'dead') {
+            if ((s.stage as string) === 'phaseEnd' && ALL_CARDS[next].kind !== 'boss') s.cardQueue.unshift(next);
+            else presentCard(s, rng, next);
+          }
         }
       }
       break;
     case 'nextPhase':
-      if (s.stage === 'phaseEnd') nextPhase(s);
+      if (s.stage === 'phaseEnd') {
+        nextPhase(s);
+        const next = s.cardQueue.shift();
+        if (next) presentCard(s, rng, next);
+      }
       break;
   }
   s.rng = rng.state();

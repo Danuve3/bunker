@@ -8,6 +8,7 @@ import { checkProject } from '../src/core/projects';
 import { canDig, dugCells, moduleAt } from '../src/core/bunker';
 import { choiceAvailable } from '../src/core/cards';
 import { totalKcal } from '../src/core/food';
+import { estimateDose } from '../src/core/expedition';
 import { ALL_CARDS } from '../src/data/cards';
 import type { ShopId } from '../src/data/items';
 import type { GameState, ModuleType } from '../src/core/types';
@@ -90,7 +91,24 @@ function prep(s: GameState, bot: BotId): GameState {
   return s;
 }
 
+function expeditionTarget(s: GameState): { loc: string; focus: 'comida' | 'agua' } | null {
+  const daysFood = totalKcal(s) / 2300;
+  const daysWater = (s.inv.agua ?? 0) / 3.8;
+  if (daysFood > 6 && daysWater > 6) return null;
+  // En nuclear, espera a que la tasa exterior baje (regla 7-10)
+  if (s.threat.primary === 'nuclear' && estimateDose(s, s.map[0], s.h) > 60) return null;
+  const focus = daysWater < daysFood ? 'agua' : 'comida';
+  const best = [...s.map].filter((l) => l.looted < 0.8).sort((a, b) => a.distKm * (1 + a.looted * 3) - b.distKm * (1 + b.looted * 3))[0];
+  return best ? { loc: best.id, focus } : null;
+}
+
 function dailyPlan(s: GameState, bot: BotId): Action {
+  const exp = bot !== 'pasivo' && s.survivor.health > 50 && s.survivor.fatigue < 60 ? expeditionTarget(s) : null;
+  if (exp)
+    return {
+      t: 'plan',
+      plan: { morning: 'expedicion', exp: { morning: exp }, afternoon: 'descansar', night: 'dormir', water: 'normal', food: 'reducida' },
+    };
   const sv = s.survivor;
   const daysWater = (s.inv.agua ?? 0) / 3.8;
   const daysFood = totalKcal(s) / 2300;

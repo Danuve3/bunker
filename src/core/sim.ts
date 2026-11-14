@@ -16,13 +16,16 @@ import {
   WATER,
 } from '../data/physiology';
 import { airVolume, batteryCapacityWh, dugCells, has, shelterCell, working } from './bunker';
-import { clockHour, groundTemp, gridUp, mainsUp, modActive, modValue, outdoorDoseRate, outdoorTemp } from './env';
+import { clockHour, groundTemp, gridUp, mainsUp, modActive, modValue, outdoorDoseRate, outdoorInfection, outdoorTemp } from './env';
 import { eat } from './food';
+import { exposureFactor } from './expedition';
+import { EXPEDITION, LOCATIONS, type LocType } from '../data/locations';
 import { clamp, log } from './log';
 import type { Rng } from './rng';
 import type { DayActivity, DayReport, DeathCause, GameState, InfectionKind } from './types';
 
 export type HourAct = DayActivity | 'dormir' | 'velada' | 'guardia' | 'refugio';
+
 type Intensity = keyof typeof ENERGY.kcalPerHour;
 
 export function emptyReport(s: GameState): DayReport {
@@ -90,7 +93,7 @@ interface PowerResult {
 function powerStep(s: GameState, act: HourAct, r: DayReport): PowerResult {
   const b = s.bunker;
   const awake = intensityOf(act, s) !== 'dormir';
-  const wantLight = s.plan.lights && awake;
+  const wantLight = s.plan.lights && awake && !s.away;
   const vents = working(b, 'ventilacion');
   const wantFan = s.plan.fan && vents.length > 0 && !modActive(s, 'fanOff');
   const fanW = wantFan ? vents.reduce((t, m) => t + (MODULES[m.type].powerW ?? 0), 0) : 0;
@@ -149,7 +152,7 @@ function powerStep(s: GameState, act: HourAct, r: DayReport): PowerResult {
     s.inv.pilas = Math.max(0, s.inv.pilas - 1 / POWER.batteryPackLightH);
     light = true;
   }
-  if (awake && !light) r.hoursDark++;
+  if (awake && !light && !s.away) r.hoursDark++;
   return { fan: wantFan && powered, light, genW };
 }
 
@@ -186,7 +189,7 @@ export function simulateHour(s: GameState, rng: Rng, act0: HourAct, r: DayReport
   const manualQ = act === 'ventilar' ? AIR.manualM3h : 0;
   const Q = leakQ + fanQ + manualQ;
   const unfilteredQ = leakQ + manualQ + (filtered ? 0 : fanQ);
-  const genM3h = AIR.co2KgPerDay / 24 / AIR.co2DensityKgM3;
+  const genM3h = s.away ? 0 : AIR.co2KgPerDay / 24 / AIR.co2DensityKgM3;
   const ceq = AIR.outdoorPpm + (genM3h / Q) * 1e6;
   b.co2ppm = ceq + (b.co2ppm - ceq) * Math.exp(-Q / V);
   r.co2Max = Math.max(r.co2Max, b.co2ppm);
@@ -195,7 +198,11 @@ export function simulateHour(s: GameState, rng: Rng, act0: HourAct, r: DayReport
   // ── Radiación ──
   const outRate = outdoorDoseRate(s);
   const shelter = shelterCell(b);
-  const rate = outRate / Math.max(1, shelter.pf) + outRate * unfilteredQ * FALLOUT.unfilteredIngressPerM3h * 0.5;
+  const awayLoc = s.away ? s.map.find((l) => l.id === s.away!.loc) : undefined;
+  // Fuera: la ropa no frena la radiación gamma; solo los edificios dan algo de protección.
+  const rate = awayLoc
+    ? outRate * exposureFactor(awayLoc)
+    : outRate / Math.max(1, shelter.pf) + outRate * unfilteredQ * FALLOUT.unfilteredIngressPerM3h * 0.5;
   sv.doseMSv += rate;
   sv.acuteDoseMSv = sv.acuteDoseMSv * Math.pow(0.5, 1 / DOSE.repairHalfLifeH) + rate;
   r.doseMSv += rate;
@@ -210,8 +217,8 @@ export function simulateHour(s: GameState, rng: Rng, act0: HourAct, r: DayReport
   let target = tg + (tOut - tg) * coupling + heatW / (THERMAL.uaPerCellWK * nDug);
   if (modActive(s, 'flood')) target -= 2;
   b.interiorTempC += (target - b.interiorTempC) * (1 - Math.exp(-1 / THERMAL.tauH));
-  const tIn = b.interiorTempC;
-  r.tempMin = Math.min(r.tempMin, tIn);
+  const tIn = awayLoc ? tOut : b.interiorTempC;
+  r.tempMin = Math.min(r.tempMin, b.interiorTempC);
 
   // ── Agua ──
   const infData = sv.infection?.stage === 'activa' ? INFECTIONS[sv.infection.kind] : null;
@@ -294,7 +301,12 @@ export function simulateHour(s: GameState, rng: Rng, act0: HourAct, r: DayReport
   sv.fatigue = clamp(sv.fatigue, 0, 100);
 
   // ── Infecciones ──
-  const insideP = modValue(s, 'infection');
+  if (awayLoc) {
+    let p = outdoorInfection(s) * LOCATIONS[awayLoc.type as LocType].infectionMult;
+    if (s.away!.masked) p *= EXPEDITION.maskInfectionMult;
+    if (rng.chance(p) && infect(s, rng, 'pandemia')) log(s, 'log.contagio', undefined, 'warn');
+  }
+  const insideP = awayLoc ? 0 : modValue(s, 'infection');
   if (insideP > 0) {
     let p = insideP * (Q > 0 ? unfilteredQ / Q : 1);
     if (modActive(s, 'masks')) p *= 0.06; // FFP2 ≥94 % (niosh_n95)

@@ -10,6 +10,7 @@ import { looterRisk, modValue } from './env';
 import { addFood, loseFoodPct, spoil } from './food';
 import { clamp, log } from './log';
 import { progressProject } from './projects';
+import { beginExpedition, finishExpedition } from './expedition';
 import type { Rng } from './rng';
 import { efficiency, emptyReport, simulateHour, type HourAct } from './sim';
 import type { DayActivity, GameState } from './types';
@@ -143,11 +144,24 @@ function finishFranja(s: GameState, act: DayActivity) {
 export function runDay(s: GameState, rng: Rng, bossDay = false) {
   s.lastReport = emptyReport(s);
   const p = s.plan;
-  for (const act of [p.morning, p.afternoon]) {
-    hours(s, rng, 6, act);
+  for (const slot of ['morning', 'afternoon'] as const) {
+    const act = p[slot];
+    const exp = act === 'expedicion' ? p.exp?.[slot] : undefined;
+    if (exp && s.map.some((l) => l.id === exp.loc)) {
+      beginExpedition(s, exp);
+      hours(s, rng, 6, 'expedicion');
+      finishExpedition(s, rng, exp);
+      if (s.stage === 'dead') return;
+      continue;
+    }
+    const a = act === 'expedicion' ? 'descansar' : act;
+    hours(s, rng, 6, a);
     if (s.stage === 'dead') return;
-    finishFranja(s, act);
+    finishFranja(s, a);
   }
+  // Las expediciones no se repiten solas: hay que planificarlas cada día.
+  for (const slot of ['morning', 'afternoon'] as const) if (p[slot] === 'expedicion') p[slot] = 'descansar';
+  p.exp = undefined;
   if (p.night === 'dormir') {
     hours(s, rng, 4, 'velada');
     hours(s, rng, 8, 'dormir');
@@ -237,14 +251,27 @@ function endOfDay(s: GameState, rng: Rng, bossDay: boolean) {
   // Limpieza de modificadores caducados
   s.threat.mods = s.threat.mods.filter((m) => m.toH > s.h);
 
-  if (bossDay) return;
+  const encounter = s.pendingEncounter;
+  s.pendingEncounter = null;
+  if (bossDay) {
+    if (encounter) s.cardQueue.push(encounter);
+    return;
+  }
   // Fase: ¿crisis final o siguiente día?
   if (s.phaseDay >= s.phaseLength) {
-    presentCard(s, rng, drawBoss(s, rng));
     log(s, 'log.crisis_final', undefined, 'bad');
+    const boss = drawBoss(s, rng);
+    if (encounter) {
+      presentCard(s, rng, encounter);
+      s.cardQueue.push(boss);
+    } else presentCard(s, rng, boss);
     return;
   }
   s.phaseDay++;
+  if (encounter) {
+    presentCard(s, rng, encounter);
+    return;
+  }
   if (rng.chance(EVENT_CHANCE)) {
     const id = drawEvent(s, rng);
     if (id) {

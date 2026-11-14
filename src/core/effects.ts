@@ -2,7 +2,7 @@
 import { COVER, MODULES } from '../data/modules';
 import { doorStrength, has, shelterCell, working } from './bunker';
 import { outdoorDoseRate, outdoorInfection } from './env';
-import { addFood, loseFoodPct } from './food';
+import { addFood, loseFoodPct, removeKcal } from './food';
 import { clamp, log } from './log';
 import type { Rng } from './rng';
 import { infect } from './sim';
@@ -28,7 +28,8 @@ function applyEffect(s: GameState, rng: Rng, e: EffectSpec) {
       s.inv.diesel = Math.max(0, (s.inv.diesel ?? 0) + e.n);
       break;
     case 'food':
-      addFood(s, e.food ?? 'conserva_plato', e.kcal, s.h + 24 * 365);
+      if (e.kcal < 0) removeKcal(s, -e.kcal);
+      else addFood(s, e.food ?? 'conserva_plato', e.kcal, s.h + 24 * 365);
       break;
     case 'foodLossPct': {
       const lost = loseFoodPct(s, e.pct);
@@ -99,6 +100,15 @@ function applyEffect(s: GameState, rng: Rng, e: EffectSpec) {
 function special(s: GameState, rng: Rng, id: SpecialEffect) {
   const sv = s.survivor;
   switch (id) {
+    case 'robbed': {
+      const k = loseFoodPct(s, rng.int(20, 35));
+      const w = Math.round((s.inv.agua ?? 0) * 0.15);
+      s.inv.agua -= w;
+      sv.injuries = clamp(sv.injuries + rng.int(5, 15), 0, 100);
+      sv.morale = clamp(sv.morale - 6, 0, 100);
+      log(s, 'log.robado', { kcal: Math.round(k), agua: w }, 'bad');
+      break;
+    }
     case 'peek': {
       // Asomarse 10 minutos al exterior: dosis a la intemperie y contagio.
       const d = outdoorDoseRate(s) * (10 / 60);

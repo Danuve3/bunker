@@ -76,3 +76,16 @@ export function loseFoodPct(s: GameState, pct: number): number {
   s.food = s.food.filter((b) => b.kcal > 0.5);
   return lost;
 }
+
+/** Retira `kcal` de la despensa, empezando por lo que caduca antes. */
+export function removeKcal(s: GameState, kcal: number): number {
+  let left = kcal;
+  for (const b of s.food) {
+    if (left <= 0) break;
+    const take = Math.min(b.kcal, left);
+    b.kcal -= take;
+    left -= take;
+  }
+  s.food = s.food.filter((b) => b.kcal > 0.5);
+  return kcal - left;
+}

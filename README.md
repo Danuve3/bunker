@@ -87,7 +87,7 @@ La lista completa con enlaces está en `src/data/sources.ts`. Los valores que so
 - [x] H0: esqueleto y despliegue
 - [x] H1: núcleo de simulación, fase 0 y fase 1 jugables, autoguardado y tests
 - [x] H2: construcción completa (almacén, 16 módulos, averías, sacos en casa o jardín) y clima en Canvas
-- [ ] H3: expediciones al exterior
+- [x] H3: expediciones al exterior (mapa procedural, exposición, botín con peso, 9 encuentros)
 - [ ] H4: 60–80 eventos con «Dato real» y amenazas secundarias encadenadas
 - [ ] H5: perks, récords, semilla diaria y compartir
 - [ ] H6: PWA completa (manifest, iconos, Service Worker offline, instalar)

@@ -159,6 +159,7 @@ export interface ThreatState {
 }
 
 export type DayActivity =
+  | 'expedicion'
   | 'descansar'
   | 'mantener'
   | 'ventilar'
@@ -175,7 +176,30 @@ export type FoodRation = 'completa' | 'reducida' | 'minima';
 export type WaterRation = 'normal' | 'reducida' | 'minima';
 export type GenMode = 'off' | 'auto' | 'on';
 
+export type LootFocus = 'agua' | 'comida' | 'medicina' | 'materiales' | 'combustible';
+
+export interface ExpPlan {
+  loc: string;
+  focus: LootFocus;
+}
+
+export interface Location {
+  id: string;
+  type: string; // LocType
+  variant: number; // nombre alternativo (i18n)
+  distKm: number;
+  angle: number; // radianes, para el mapa
+  looted: number; // 0..1
+  visits: number;
+}
+
+export interface Away {
+  loc: string;
+  masked: boolean;
+}
+
 export interface DayPlan {
+  exp?: { morning?: ExpPlan; afternoon?: ExpPlan };
   morning: DayActivity;
   afternoon: DayActivity;
   night: NightActivity;
@@ -207,7 +231,7 @@ export type EffectSpec =
   | { k: 'cover'; cm: number }
   | { k: 'special'; id: SpecialEffect };
 
-export type SpecialEffect = 'peek' | 'assault_hide' | 'assault_resist' | 'flood' | 'flood_bail' | 'storm_electronics' | 'co_risk';
+export type SpecialEffect = 'robbed' | 'peek' | 'assault_hide' | 'assault_resist' | 'flood' | 'flood_bail' | 'storm_electronics' | 'co_risk';
 
 export interface DelayedEffect {
   atH: number;
@@ -287,6 +311,13 @@ export interface GameState {
   /** Visibilidad acumulada (luces de noche, salidas): decae con el tiempo. */
   visibility: number;
   tutorial: { step: number; done: boolean } | null;
+  map: Location[];
+  /** Fuera del búnker (expedición en curso durante la simulación). */
+  away: Away | null;
+  /** Encuentro pendiente de mostrar al final del día. */
+  pendingEncounter: string | null;
+  /** Cartas que se mostrarán después de la actual. */
+  cardQueue: string[];
 }
 
 export interface DayReport {

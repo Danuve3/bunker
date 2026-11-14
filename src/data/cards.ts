@@ -35,6 +35,8 @@ export interface CardData {
   base?: EffectSpec[];
   choices: CardChoice[];
   fact?: SourceId;
+  /** Solo aparece como encuentro durante una expedición. */
+  encounter?: boolean;
 }
 
 // ─── Crisis finales de fase ("jefes") ────────────────────────────────────────
@@ -232,4 +234,101 @@ export const EVENTS: CardData[] = [
   },
 ];
 
-export const ALL_CARDS: Record<string, CardData> = Object.fromEntries([...BOSSES, ...EVENTS].map((c) => [c.id, c]));
+// ─── Encuentros en expediciones ─────────────────────────────────────────────
+// Conflicto abstracto: nada de detalles sobre armas. Se resuelve con decisiones.
+export const ENCOUNTERS: CardData[] = [
+  {
+    id: 'enc_grupo',
+    kind: 'event',
+    encounter: true,
+    weight: 2,
+    choices: [
+      { id: 'negociar', effects: [{ k: 'foodLossPct', pct: 12 }, { k: 'stat', stat: 'morale', n: -3 }] },
+      { id: 'esconderse', effects: [{ k: 'chance', p: 0.6, then: [{ k: 'stat', stat: 'fatigue', n: 5 }], else: [{ k: 'special', id: 'robbed' }], textThen: 'enc_grupo_ok', textElse: 'enc_grupo_mal' }] },
+      { id: 'huir', effects: [{ k: 'stat', stat: 'fatigue', n: 15 }, { k: 'chance', p: 0.7, then: [], else: [{ k: 'stat', stat: 'injuries', n: 22 }], textThen: 'enc_grupo_huye', textElse: 'enc_grupo_caida' }] },
+    ],
+  },
+  {
+    id: 'enc_familia',
+    kind: 'event',
+    encounter: true,
+    choices: [
+      { id: 'agua', requires: { agua: 6 }, effects: [{ k: 'stat', stat: 'morale', n: 10 }] },
+      { id: 'consejo', effects: [{ k: 'stat', stat: 'morale', n: 3 }] },
+      { id: 'seguir', effects: [{ k: 'stat', stat: 'morale', n: -8 }] },
+    ],
+    fact: 'cdc_water',
+  },
+  {
+    id: 'enc_herido',
+    kind: 'event',
+    encounter: true,
+    choices: [
+      { id: 'curar', requires: { botiquin: 1 }, effects: [{ k: 'stat', stat: 'morale', n: 10 }, { k: 'chance', p: 0.4, then: [{ k: 'inv', id: 'antibiotico', n: 2 }], textThen: 'enc_herido_regalo' }] },
+      { id: 'agua', requires: { agua: 2 }, effects: [{ k: 'stat', stat: 'morale', n: 5 }] },
+      { id: 'dejar', effects: [{ k: 'stat', stat: 'morale', n: -7 }] },
+    ],
+  },
+  {
+    id: 'enc_trueque',
+    kind: 'event',
+    encounter: true,
+    choices: [
+      { id: 'comida_meds', requires: { _kcal: 3000 }, effects: [{ k: 'food', kcal: -3000 }, { k: 'inv', id: 'antibiotico', n: 2 }, { k: 'inv', id: 'analgesicos', n: 1 }] },
+      { id: 'agua_gas', requires: { agua: 10 }, effects: [{ k: 'inv', id: 'gas', n: 3 }] },
+      { id: 'diesel_comida', requires: { diesel: 10 }, effects: [{ k: 'food', kcal: 6000 }] },
+      { id: 'nada', effects: [] },
+    ],
+  },
+  {
+    id: 'enc_perro',
+    kind: 'event',
+    encounter: true,
+    choices: [
+      { id: 'alimentar', requires: { _kcal: 600 }, effects: [{ k: 'food', kcal: -600 }, { k: 'stat', stat: 'morale', n: 9 }] },
+      { id: 'espantar', effects: [{ k: 'stat', stat: 'morale', n: -2 }] },
+    ],
+  },
+  {
+    id: 'enc_patrulla_nbq',
+    kind: 'event',
+    encounter: true,
+    threats: ['nuclear'],
+    choices: [
+      { id: 'preguntar', effects: [{ k: 'stat', stat: 'morale', n: 6 }, { k: 'inv', id: 'ffp2', n: 4 }] },
+      { id: 'esconderse', effects: [{ k: 'stat', stat: 'fatigue', n: 4 }] },
+    ],
+    fact: 'who_ki',
+  },
+  {
+    id: 'enc_control',
+    kind: 'event',
+    encounter: true,
+    threats: ['pandemia'],
+    choices: [
+      { id: 'parar', effects: [{ k: 'stat', stat: 'morale', n: 4 }, { k: 'infect', kind: 'pandemia', p: 0.08 }, { k: 'inv', id: 'ffp2', n: 5 }] },
+      { id: 'rodear', effects: [{ k: 'stat', stat: 'fatigue', n: 10 }] },
+    ],
+    fact: 'cdc_flu',
+  },
+  {
+    id: 'enc_cornisa',
+    kind: 'event',
+    encounter: true,
+    choices: [
+      { id: 'saltar', effects: [{ k: 'chance', p: 0.65, then: [{ k: 'stat', stat: 'fatigue', n: 5 }], else: [{ k: 'stat', stat: 'injuries', n: 18 }], textThen: 'enc_cornisa_ok', textElse: 'enc_cornisa_mal' }] },
+      { id: 'cubrirse', effects: [{ k: 'chance', p: 0.8, then: [], else: [{ k: 'stat', stat: 'injuries', n: 10 }], textThen: 'enc_cornisa_ok', textElse: 'enc_cornisa_mal' }] },
+    ],
+  },
+  {
+    id: 'enc_antena',
+    kind: 'event',
+    encounter: true,
+    choices: [
+      { id: 'hablar', effects: [{ k: 'stat', stat: 'morale', n: 8 }, { k: 'chance', p: 0.25, then: [{ k: 'inv', id: 'emisora', n: 1 }], textThen: 'enc_antena_regalo' }] },
+      { id: 'pasar', effects: [] },
+    ],
+  },
+];
+
+export const ALL_CARDS: Record<string, CardData> = Object.fromEntries([...BOSSES, ...EVENTS, ...ENCOUNTERS].map((c) => [c.id, c]));

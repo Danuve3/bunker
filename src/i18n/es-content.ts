@@ -67,6 +67,8 @@ export const content = {
     madera: 'Tablones',
     cemento: 'Sacos de cemento',
     filtro_hepa: 'Filtros HEPA de repuesto',
+    emisora: 'Emisora de radio',
+    _kcal: 'Comida (kcal)',
     antibiotico: 'Antibióticos',
     bidon_25: 'Bidones vacíos',
     bidon_lleno: 'Bidones llenos',
@@ -151,6 +153,20 @@ export const content = {
     },
   } as Record<string, { name: string; brief: string; tip: string }>,
 
+  places: {
+    farmacia: { names: ['Farmacia del barrio', 'Parafarmacia de la avenida', 'Farmacia de guardia'], icon: '✚' },
+    super: { names: ['Supermercado de la esquina', 'Hipermercado del polígono', 'Ultramarinos'], icon: '🛒' },
+    gasolinera: { names: ['Gasolinera de la carretera', 'Área de servicio', 'Gasolinera low cost'], icon: '⛽' },
+    ferreteria: { names: ['Ferretería de toda la vida', 'Almacén de bricolaje', 'Almacén de materiales'], icon: '🔧' },
+    hospital: { names: ['Centro de salud', 'Hospital comarcal', 'Clínica privada'], icon: '🏥' },
+    casa: { names: ['Casa de los vecinos', 'Chalé cerrado', 'Bloque de pisos'], icon: '🏠' },
+    rio: { names: ['Río', 'Acequia', 'Fuente del parque'], icon: '💧' },
+    huerto: { names: ['Huertos urbanos', 'Invernadero', 'Huerta del tío Paco'], icon: '🥬' },
+    colegio: { names: ['Colegio público', 'Polideportivo', 'Instituto'], icon: '🏫' },
+  } as Record<string, { names: string[]; icon: string }>,
+
+  focus: { agua: 'Agua', comida: 'Comida', medicina: 'Medicinas', materiales: 'Materiales', combustible: 'Combustible' } as Record<string, string>,
+
   causes: {
     deshidratacion: 'Deshidratación',
     inanicion: 'Inanición',
@@ -230,6 +246,94 @@ export const content = {
       },
       fact: 'Según la escala de la NOAA, una tormenta G5 puede dañar transformadores y causar apagones generalizados. Las corrientes inducidas afectan sobre todo a los conductores largos; los aparatos pequeños desconectados suelen salvarse.',
     },
+    enc_grupo: {
+      title: 'Un grupo te corta el paso',
+      text: 'Cuatro personas salen de un portal. Te miran la mochila. Uno de ellos levanta las manos, como para hablar.',
+      choices: {
+        negociar: { label: 'Negociar: ofrecer parte de la comida', res: 'Les das algo. Se apartan sin decir nada.' },
+        esconderse: { label: 'Retroceder y esconderte entre los coches', res: 'Te agachas entre dos coches y contienes la respiración.' },
+        huir: { label: 'Echar a correr', res: 'Corres con la mochila golpeándote la espalda.' },
+      },
+    },
+    enc_grupo_ok: { title: '', text: 'Pasan de largo. No te han visto.' },
+    enc_grupo_mal: { title: '', text: 'Te encuentran.' },
+    enc_grupo_huye: { title: '', text: 'Los dejas atrás. El corazón te va a salir del pecho.' },
+    enc_grupo_caida: { title: '', text: 'Tropiezas en un bordillo y caes mal.' },
+    enc_familia: {
+      title: 'Una familia',
+      text: 'Una mujer con dos niños pequeños te pide agua desde una ventana. Los niños tienen los labios agrietados.',
+      choices: {
+        agua: { label: 'Darles 6 L de agua', res: 'Te miran como si les hubieras dado oro.' },
+        consejo: { label: 'Explicarles cómo potabilizar agua con lejía', res: 'Dos gotas por litro, media hora de espera. Lo repiten en voz baja.' },
+        seguir: { label: 'Seguir tu camino', res: 'No te giras.' },
+      },
+      fact: 'Los CDC indican que el agua turbia se deja reposar y se filtra con un paño. Luego se hierve 1 minuto o se tratan 4 litros con 8 gotas de lejía doméstica sin aditivos y se esperan 30 minutos.',
+    },
+    enc_herido: {
+      title: 'Alguien herido',
+      text: 'Un hombre se apoya en un portal, con la pierna envuelta en una toalla empapada de sangre.',
+      choices: {
+        curar: { label: 'Curarle con tu botiquín', res: 'Limpias, desinfectas y vendas. Te da las gracias con un hilo de voz.' },
+        agua: { label: 'Darle agua', res: 'Bebe despacio. Es lo único que puedes hacer.' },
+        dejar: { label: 'Seguir', res: 'Lo dejas atrás. Te pesa más que la mochila.' },
+      },
+    },
+    enc_herido_regalo: { title: '', text: 'Antes de irte, te da una caja de antibióticos que guardaba.' },
+    enc_trueque: {
+      title: 'Trueque',
+      text: 'Un hombre con un carrito de la compra lleno hasta arriba te propone un intercambio, a distancia prudencial.',
+      choices: {
+        comida_meds: { label: '3.000 kcal de comida por antibióticos y paracetamol', res: 'Trato hecho.' },
+        agua_gas: { label: '10 L de agua por 3 cartuchos de gas', res: 'Trato hecho.' },
+        diesel_comida: { label: '10 L de diésel por 6.000 kcal de comida', res: 'Trato hecho.' },
+        nada: { label: 'No, gracias', res: 'Se encoge de hombros.' },
+      },
+    },
+    enc_perro: {
+      title: 'Un perro',
+      text: 'Un perro flaco, con collar, te sigue a distancia. Cuando te paras, se sienta.',
+      choices: {
+        alimentar: { label: 'Darle algo de comer', res: 'Come con ansia y te lame la mano. Por un rato no estás solo.' },
+        espantar: { label: 'Espantarlo', res: 'Se aleja con el rabo entre las patas.' },
+      },
+    },
+    enc_patrulla_nbq: {
+      title: 'Patrulla NBQ',
+      text: 'Dos figuras con trajes de protección y máscaras te hacen señas. Llevan un contador Geiger que chasquea.',
+      choices: {
+        preguntar: { label: 'Acercarte y preguntar', res: 'Te dan mascarillas y te recuerdan: «quédese dentro, y el yoduro solo protege el tiroides».' },
+        esconderse: { label: 'Esconderte', res: 'No te fías de nadie. Esperas a que pasen.' },
+      },
+      fact: 'La OMS recuerda que el yoduro potásico solo protege el tiroides frente al yodo radiactivo (I-131) y únicamente si se toma en el momento indicado. No protege de la radiación externa ni de otros isótopos.',
+    },
+    enc_control: {
+      title: 'Control sanitario',
+      text: 'Un control en el cruce: vallas, una tienda de campaña, personal con EPI tomando temperaturas.',
+      choices: {
+        parar: { label: 'Pararte en el control', res: 'Te toman la temperatura y te dan mascarillas. Hay mucha gente cerca.' },
+        rodear: { label: 'Dar un rodeo', res: 'Media hora más de camino, pero lejos de la multitud.' },
+      },
+      fact: 'Los CDC indican que la gripe se incuba 1-4 días y que se puede contagiar desde un día antes de tener síntomas. Por eso las aglomeraciones son peligrosas aunque nadie parezca enfermo.',
+    },
+    enc_cornisa: {
+      title: '¡Cuidado arriba!',
+      text: 'Un crujido sobre tu cabeza: un trozo de cornisa se desprende del edificio.',
+      choices: {
+        saltar: { label: 'Saltar hacia delante', res: 'Te lanzas al suelo.' },
+        cubrirse: { label: 'Pegarte a la pared y cubrirte la cabeza', res: 'Te encoges contra la fachada.' },
+      },
+    },
+    enc_cornisa_ok: { title: '', text: 'Los cascotes caen a un metro. Solo un susto.' },
+    enc_cornisa_mal: { title: '', text: 'Un cascote te golpea el hombro.' },
+    enc_antena: {
+      title: 'La antena',
+      text: 'En una azotea, un vecino mayor ajusta una antena enorme. Te saluda: «¿Tienes radio? Hay gente ahí fuera».',
+      choices: {
+        hablar: { label: 'Subir a charlar un rato', res: 'Te enseña su emisora y te habla de los refugios con los que contacta.' },
+        pasar: { label: 'Saludar y seguir', res: 'Le devuelves el saludo.' },
+      },
+    },
+    enc_antena_regalo: { title: '', text: '«Llévate esta emisora vieja, yo tengo otra». Te la da envuelta en una bolsa.' },
     ev_golpes: {
       title: 'Golpes en la superficie',
       text: 'Son las 3:12. Algo metálico golpea arriba, rítmico, insistente. Luego silencio. Luego otra vez.',
@@ -351,6 +455,10 @@ export const content = {
     banera: 'Llenas la bañera: 150 L de agua no potable para asearte.',
     bidones: 'Llenas {n} bidones: {l} L de agua potable.',
     deposito: 'Llenas los depósitos con la manguera: {l} L.',
+    botin: 'Vuelves de {place}: {loot}.',
+    sin_botin: 'Vuelves de {place} con las manos vacías.',
+    herida_fuera: 'Te cortas con unos cristales al registrar el lugar.',
+    robado: 'Te quitan parte de lo que llevas: −{kcal} kcal, −{agua} L de agua. Te empujan y caes.',
     almacen_lleno: 'El búnker está atestado: no cabe nada más y te agobia.',
     cosecha: '¡Primera cosecha del cultivo hidropónico!',
     cultivo_sufre: 'El cultivo se resiente: le falta luz o agua.',

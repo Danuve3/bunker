@@ -3,7 +3,8 @@ import { useState } from 'preact/hooks';
 import { has } from '../../core/bunker';
 import { clockHour } from '../../core/env';
 import type { DayActivity, DayPlan, GameState, NightActivity } from '../../core/types';
-import { C, T, fmt, logText, moduleName, num } from '../../i18n';
+import { C, T, fmt, logText, moduleName, num, placeName } from '../../i18n';
+import { MapSheet } from './MapSheet';
 import { BunkerView } from '../bunker/BunkerView';
 import { AlertBar, ResourceChips, SurvivorPanel } from '../components/Hud';
 import { Seg, Sheet, Toggle } from '../components/ui';
@@ -11,11 +12,11 @@ import { act, selectedCell, sheet, showReport } from '../store';
 import { CellSheet } from './CellSheet';
 import { TopBar } from './TopBar';
 
-const DAY_ACTS: DayActivity[] = ['mantener', 'descansar', 'ocio', 'radio', 'ventilar', 'construir', 'potabilizar', 'curar', 'vigilar'];
+const DAY_ACTS: DayActivity[] = ['expedicion', 'mantener', 'descansar', 'ocio', 'radio', 'ventilar', 'construir', 'potabilizar', 'curar', 'vigilar'];
 const NIGHT_ACTS: NightActivity[] = ['dormir', 'guardia'];
 
 function ActPicker({ s, slot }: { s: GameState; slot: 'morning' | 'afternoon' | 'night' }) {
-  const acts = slot === 'night' ? NIGHT_ACTS : DAY_ACTS;
+  const acts = slot === 'night' ? NIGHT_ACTS : DAY_ACTS.filter((a) => a !== 'expedicion' || s.map.length > 0);
   const close = () => (sheet.value = null);
   return (
     <Sheet title={T.plan[slot]} onClose={close}>
@@ -28,6 +29,10 @@ function ActPicker({ s, slot }: { s: GameState; slot: 'morning' | 'afternoon' | 
                 class={`btn wide ${s.plan[slot] === a ? 'selected' : ''}`}
                 disabled={disabled}
                 onClick={() => {
+                  if (a === 'expedicion') {
+                    sheet.value = `map:${slot}`;
+                    return;
+                  }
                   act({ t: 'plan', plan: { [slot]: a } as Partial<DayPlan> });
                   close();
                 }}
@@ -151,6 +156,7 @@ export function CrisisScreen({ s }: { s: GameState }) {
             <button key={slot} class="slot" onClick={() => (sheet.value = `act:${slot}`)}>
               <span class="small muted">{T.plan[slot]}</span>
               <b>{T.plan.acts[p[slot]]}</b>
+              {p[slot] === 'expedicion' && slot !== 'night' && p.exp?.[slot] && <span class="small muted">{placeName(p.exp[slot]!.loc)}</span>}
             </button>
           ))}
         </div>
@@ -192,6 +198,7 @@ export function CrisisScreen({ s }: { s: GameState }) {
         </button>
       </div>
       {sheet.value?.startsWith('act:') && <ActPicker s={s} slot={sheet.value.slice(4) as 'morning'} />}
+      {sheet.value?.startsWith('map:') && <MapSheet s={s} slot={sheet.value.slice(4) as 'morning'} />}
       {sheet.value === 'log' && <LogSheet s={s} />}
       {selectedCell.value && <CellSheet s={s} />}
       {showReport.value && <ReportSheet s={s} />}

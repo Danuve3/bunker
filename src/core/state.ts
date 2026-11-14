@@ -3,9 +3,10 @@ import { AIR, FALLOUT, GRID, THERMAL } from '../data/environment';
 import { MORALE } from '../data/physiology';
 import { CLIMATE, CLIMATE_VARIANTS, THREATS, THREAT_IDS, phaseLength } from '../data/threats';
 import { Rng } from './rng';
+import { generateMap } from './expedition';
 import type { Bunker, CellKind, DayPlan, GameMode, GameState, ThreatId, ThreatState } from './types';
 
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 
 export const DEFAULT_PLAN: DayPlan = {
   morning: 'mantener',
@@ -89,6 +90,7 @@ export function newGame(seed: string, opts: NewGameOptions = {}): GameState {
   const startClock = rng.int(7, 17);
   const { threat, budget } = makeThreat(rng, primary, 0);
   const bunker = makeBunker(rng);
+  const map = generateMap(rng);
 
   const s: GameState = {
     v: SAVE_VERSION,
@@ -146,6 +148,10 @@ export function newGame(seed: string, opts: NewGameOptions = {}): GameState {
     noise24: 0,
     visibility: 0,
     tutorial: null,
+    map,
+    away: null,
+    pendingEncounter: null,
+    cardQueue: [],
   };
   return s;
 }

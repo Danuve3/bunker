@@ -35,7 +35,7 @@ export function cardEligible(s: GameState, c: CardData): boolean {
 
 /** Elige un evento no visto recientemente (se permite repetir cuando se agota el pool). */
 export function drawEvent(s: GameState, rng: Rng): string | null {
-  const eligible = EVENTS.filter((c) => cardEligible(s, c));
+  const eligible = EVENTS.filter((c) => !c.encounter && cardEligible(s, c));
   if (!eligible.length) return null;
   const recent = new Set(s.eventsSeen.slice(-Math.max(1, Math.floor(eligible.length * 0.7))));
   let pool = eligible.filter((c) => !recent.has(c.id));
@@ -51,8 +51,13 @@ export function drawBoss(s: GameState, rng: Rng): string {
 
 export function choiceAvailable(s: GameState, ch: CardChoice): boolean {
   if (ch.requiresModule && !has(s.bunker, ch.requiresModule)) return false;
-  if (ch.requires) for (const [id, n] of Object.entries(ch.requires)) if ((s.inv[id] ?? 0) < n) return false;
+  if (ch.requires) for (const [id, n] of Object.entries(ch.requires)) if (have(s, id) < n) return false;
   return true;
+}
+
+/** Cantidad disponible de un requisito. `_kcal` = comida total. */
+export function have(s: GameState, id: string): number {
+  return id === '_kcal' ? totalKcal(s) : (s.inv[id] ?? 0);
 }
 
 export function presentCard(s: GameState, rng: Rng, id: string) {
@@ -72,7 +77,8 @@ export function resolveChoice(s: GameState, rng: Rng, choiceId: string): boolean
   const c = ALL_CARDS[s.pending.id];
   const ch = c.choices.find((x) => x.id === choiceId);
   if (!ch || !choiceAvailable(s, ch)) return false;
-  if (ch.requires) for (const [id, n] of Object.entries(ch.requires)) s.inv[id] -= n;
+  // Los requisitos se consumen (salvo `_kcal`, que gasta el propio efecto de comida).
+  if (ch.requires) for (const [id, n] of Object.entries(ch.requires)) if (id !== '_kcal') s.inv[id] -= n;
   log(s, `card.${c.id}.${ch.id}.res`, undefined, 'info');
   applyEffects(s, rng, ch.effects);
   s.pending = null;
