@@ -6,10 +6,12 @@ import type { GameState } from '../../core/types';
 import { C, T, num } from '../../i18n';
 import { Sheet } from '../components/ui';
 import { act, randomSeed, resume, savedRun, screen, start, startDaily } from '../store';
+import { canInstall, isIOS, isStandalone, promptInstall } from '../../pwa/register';
 
 export function Menu() {
   const [confirm, setConfirm] = useState<null | (() => void)>(null);
   const [seedOpen, setSeedOpen] = useState(false);
+  const [iosOpen, setIosOpen] = useState(false);
   const [seed, setSeed] = useState('');
   const guard = (fn: () => void) => () => (savedRun.value ? setConfirm(() => fn) : fn());
   const today = dailySeed(new Date());
@@ -50,6 +52,16 @@ export function Menu() {
         <button class="btn ghost wide" onClick={() => setSeedOpen(true)}>
           {T.menu.customSeed}
         </button>
+        {canInstall.value && (
+          <button class="btn ghost wide" onClick={() => void promptInstall()}>
+            ⬇ {T.pwa.install}
+          </button>
+        )}
+        {isIOS && !isStandalone() && (
+          <button class="btn ghost wide" onClick={() => setIosOpen(true)}>
+            ⬇ {T.pwa.installIOS}
+          </button>
+        )}
         <div class="row">
           <button class="btn ghost" onClick={() => (screen.value = 'records')}>
             {T.menu.records}
@@ -59,6 +71,15 @@ export function Menu() {
           </button>
         </div>
       </div>
+      {iosOpen && (
+        <Sheet title={T.pwa.iosTitle} onClose={() => setIosOpen(false)}>
+          <ol class="steps">
+            {T.pwa.iosSteps.map((t, i) => (
+              <li key={i}>{t}</li>
+            ))}
+          </ol>
+        </Sheet>
+      )}
       {confirm && (
         <Sheet
           title={T.menu.newGame}

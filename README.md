@@ -90,7 +90,7 @@ La lista completa con enlaces está en `src/data/sources.ts`. Los valores que so
 - [x] H3: expediciones al exterior (mapa procedural, exposición, botín con peso, 9 encuentros)
 - [x] H4: 76 eventos + 9 encuentros + 14 crisis finales (39 con «Dato real») y amenazas secundarias encadenadas
 - [x] H5: 34 perks (1 de 3), récords y estadísticas, racha del Búnker del día, compartir
-- [ ] H6: PWA completa (manifest, iconos, Service Worker offline, instalar)
+- [x] H6: PWA completa (manifest, iconos y splash generados, Service Worker offline versionado, aviso de actualización, instalar)
 - [ ] H7: audio generativo y vibración
 - [ ] H8: tutorial guiado
 - [ ] H9: balanceo, accesibilidad y pulido

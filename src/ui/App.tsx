@@ -1,4 +1,6 @@
 import { game, screen, toast } from './store';
+import { applyUpdate, updateReady } from '../pwa/register';
+import { T } from '../i18n';
 import { Briefing, HowTo, Menu } from './screens/Menu';
 import { PrepScreen } from './screens/Prep';
 import { CrisisScreen } from './screens/Crisis';
@@ -9,6 +11,14 @@ export function App() {
   return (
     <>
       <Main />
+      {updateReady.value && (
+        <div class="update-banner" role="status">
+          <span>{T.pwa.update}</span>
+          <button class="btn primary" onClick={applyUpdate}>
+            {T.pwa.reload}
+          </button>
+        </div>
+      )}
       {toast.value && (
         <div class="toast" role="status">
           {toast.value}

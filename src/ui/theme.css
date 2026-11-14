@@ -351,3 +351,8 @@ h3 { font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.08em; colo
 .causes li { display: grid; grid-template-columns: 9rem 1fr auto; align-items: center; gap: 8px; font-size: 0.85rem; }
 .cause-bar { height: 8px; border-radius: 4px; background: var(--bad); opacity: 0.7; }
 .toast { position: fixed; left: 50%; bottom: calc(110px + var(--sa-b)); transform: translateX(-50%); z-index: 40; background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 999px; font-weight: 700; box-shadow: 0 8px 24px rgba(0,0,0,.4); }
+
+/* ── PWA ── */
+.update-banner { position: fixed; top: calc(8px + var(--sa-t)); left: 50%; transform: translateX(-50%); z-index: 50; display: flex; align-items: center; gap: 12px; background: var(--panel2); border: 1px solid var(--accent); border-radius: 999px; padding: 6px 6px 6px 16px; box-shadow: 0 8px 24px rgba(0,0,0,.5); font-weight: 700; white-space: nowrap; }
+.update-banner .btn { min-height: 40px; border-radius: 999px; }
+.steps { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 8px; }

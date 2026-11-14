@@ -244,5 +244,19 @@ export const ui = {
     sick: 'Enfermo',
     battery: 'Batería baja',
   },
+  pwa: {
+    update: 'Nueva versión disponible',
+    reload: 'Recargar',
+    install: 'Instalar la app',
+    installIOS: 'Instalar en iPhone/iPad',
+    iosTitle: 'Instalar en iOS',
+    iosSteps: [
+      'Abre esta página en Safari.',
+      'Pulsa el botón Compartir (el cuadrado con la flecha hacia arriba).',
+      'Elige «Añadir a pantalla de inicio».',
+      'Pulsa «Añadir». BÚNKER funcionará sin conexión, como una app.',
+    ],
+    offline: 'Funciona sin conexión',
+  },
   common: { close: 'Cerrar', yes: 'Sí', no: 'No', cancel: 'Cancelar', menu: 'Menú', back: 'Volver' },
 };
