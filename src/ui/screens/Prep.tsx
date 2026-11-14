@@ -2,7 +2,8 @@
 import { useState } from 'preact/hooks';
 import { clockHour } from '../../core/env';
 import { totalKcal } from '../../core/food';
-import { available, checkBuy, hoursLeft, price, projectHoursEstimate, tripHours } from '../../core/prep';
+import { available, checkBuy, hoursLeft, price, projectHoursEstimate, tankRoom, tripHours } from '../../core/prep';
+import { storageInfo } from '../../core/bunker';
 import { excavatorActive } from '../../core/projects';
 import type { GameState } from '../../core/types';
 import { ITEMS, SHOPS, type ShopId } from '../../data/items';
@@ -45,6 +46,7 @@ function ShopSheet({ s, shop }: { s: GameState; shop: ShopId }) {
         </div>
       }
     >
+      <StorageBar s={s} />
       {shop === 'online' && <p class="small tone-warn">{T.prep.online}</p>}
       {shop === 'alquiler' && <p class="small">{T.prep.excavator}</p>}
       <ul class="shop-list">
@@ -66,6 +68,28 @@ function ShopSheet({ s, shop }: { s: GameState; shop: ShopId }) {
         })}
       </ul>
     </Sheet>
+  );
+}
+
+export function StorageBar({ s }: { s: GameState }) {
+  const st = storageInfo(s);
+  const pct = st.cap > 0 ? Math.min(100, (st.used / st.cap) * 100) : 100;
+  return (
+    <div class="storage">
+      <div class="bar-top">
+        <span>
+          {T.prep.storage} <span class="muted">(1 = 1 L o 1 kg)</span>
+        </span>
+        <span class="num">
+          {num(st.used)} / {num(st.cap)}
+          {st.waterExtra > 0 && ` · depósitos ${num(Math.min(st.waterL, st.waterExtra))}/${num(st.waterExtra)} L`}
+          {st.foodExtra > 0 && ` · despensa ${num(Math.min(st.foodKg, st.foodExtra))}/${num(st.foodExtra)} kg`}
+        </span>
+      </div>
+      <div class="bar-track">
+        <div class={`bar-fill tone-${pct > 95 ? 'bad' : pct > 75 ? 'warn' : 'good'}`} style={{ width: `${pct}%` }} />
+      </div>
+    </div>
   );
 }
 
@@ -170,8 +194,9 @@ export function PrepScreen({ s }: { s: GameState }) {
         {tab === 'home' && (
           <>
             <ul class="actions">
-              {(['banera', 'bidones', 'dormir', 'descansar'] as const).map((id) => {
-                const disabled = (id === 'banera' && !!s.inv.banera) || (id === 'bidones' && !(s.inv.bidon_25 > 0));
+              {(['banera', 'bidones', 'deposito', 'dormir', 'descansar'] as const).map((id) => {
+                if (id === 'deposito' && storageInfo(s).waterExtra <= 0) return null;
+                const disabled = (id === 'banera' && !!s.inv.banera) || (id === 'bidones' && !(s.inv.bidon_25 > 0)) || (id === 'deposito' && tankRoom(s) < 1);
                 return (
                   <li key={id}>
                     <button class="btn wide" disabled={disabled} onClick={() => act({ t: 'prep', id })}>
@@ -185,6 +210,7 @@ export function PrepScreen({ s }: { s: GameState }) {
             <p class="small muted">
               Cansancio: <b class="num">{Math.round(s.survivor.fatigue)}</b> / 100
             </p>
+            <StorageBar s={s} />
             <h3>Inventario</h3>
             <Inventory s={s} />
           </>

@@ -76,6 +76,7 @@ export const ITEMS: Record<string, ItemData> = {
   filtro_hepa: { shop: 'ferreteria', price: 45, kind: 'goods', adds: { id: 'filtro_hepa', n: 1 }, stock: 10, demand: 0.6, hot: ['nuclear', 'pandemia'] },
   puerta_acero: { shop: 'ferreteria', price: 600, kind: 'goods', adds: { id: 'puerta_acero', n: 1 }, stock: 2, demand: 0.3 },
   inodoro_quimico: { shop: 'ferreteria', price: 80, kind: 'goods', adds: { id: 'inodoro_quimico', n: 1 }, stock: 5, demand: 0.4 },
+  tubo_periscopio: { shop: 'ferreteria', price: 30, kind: 'goods', adds: { id: 'tubo_periscopio', n: 1 }, stock: 4, demand: 0.1 },
   medidor_co2: { shop: 'ferreteria', price: 60, kind: 'goods', adds: { id: 'medidor_co2', n: 1 }, stock: 5, demand: 0.2 },
   // ── Farmacia ──
   botiquin: { shop: 'farmacia', price: 35, kind: 'goods', adds: { id: 'botiquin', n: 1 }, stock: 10, demand: 0.6 },
@@ -98,6 +99,8 @@ export const ITEMS: Record<string, ItemData> = {
   dosimetro: { shop: 'online', price: 160, kind: 'goods', adds: { id: 'dosimetro', n: 1 }, stock: 5, demand: 0.3, hot: ['nuclear'] },
   liofilizada: { shop: 'online', price: 12, kind: 'food', kcal: 2000, shelfDays: 3600, stock: 40, demand: 0.6 },
   bateria_online: { shop: 'online', price: 180, kind: 'goods', adds: { id: 'bateria_agm', n: 1 }, stock: 6, demand: 0.3 },
+  kit_hidroponico: { shop: 'online', price: 140, kind: 'goods', adds: { id: 'kit_hidroponico', n: 1 }, stock: 4, demand: 0.2 },
+  emisora: { shop: 'online', price: 260, kind: 'goods', adds: { id: 'emisora', n: 1 }, stock: 3, demand: 0.3 },
   filtro_online: { shop: 'online', price: 35, kind: 'goods', adds: { id: 'filtro_hepa', n: 1 }, stock: 8, demand: 0.4 },
   // ── Alquiler ──
   miniexcavadora: { shop: 'alquiler', price: 280, kind: 'service', stock: 2, demand: 0.6 },
@@ -129,5 +132,7 @@ export const CONSUMPTION = {
   /** Llenar la bañera (~150 L de agua no potable para aseo), consejo FEMA. */
   bathtubL: 150,
   bathtubH: 0.5,
+  /** Llenar un depósito de 500 L con manguera (~15 L/min). */
+  tankFillH: 0.6,
   potabilizarLPerH: 8,
 } as const;

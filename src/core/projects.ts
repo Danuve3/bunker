@@ -32,7 +32,8 @@ export function checkProject(s: GameState, kind: Project['kind'], c: number, r: 
     if (miss) return { ok: false, reason: 'faltan_materiales', missing: miss };
     return { ok: true, hours: data.hours };
   }
-  // cubrir: sacos terreros sobre la columna de la entrada (encima del sótano)
+  // cubrir: sacos terreros sobre una sala del nivel −1 (en la casa o como montículo en el jardín)
+  if (r !== 1 || b.cells[idx(b, c, 1)] !== 'hueco') return { ok: false, reason: 'no_adyacente' };
   if ((b.coverCm[c] ?? 0) >= COVER.maxCm) return { ok: false, reason: 'cobertura_maxima' };
   if ((s.inv.sacos ?? 0) < COVER.sacosPerLayer) return { ok: false, reason: 'faltan_materiales', missing: { sacos: COVER.sacosPerLayer - (s.inv.sacos ?? 0) } };
   return { ok: true, hours: COVER.hoursPerLayer };

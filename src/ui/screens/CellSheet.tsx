@@ -1,9 +1,9 @@
 /** Hoja de una celda del búnker: información, excavar, construir, cubrir. */
-import { canDig, cellAt, cellPF, digHours, moduleAt } from '../../core/bunker';
+import { canDig, cellAt, cellPF, digHours, moduleAt, underHouse } from '../../core/bunker';
 import { checkProject, excavatorActive } from '../../core/projects';
 import type { GameState, ModuleType } from '../../core/types';
 import { EXCAVATOR } from '../../data/items';
-import { DIG, MODULES } from '../../data/modules';
+import { DIG, HYDRO, MODULES } from '../../data/modules';
 import { GRID } from '../../data/environment';
 import { C, T, fmt, itemName, moduleName, num } from '../../i18n';
 import { Sheet } from '../components/ui';
@@ -77,7 +77,7 @@ export function CellSheet({ s }: { s: GameState }) {
       </>
     );
   } else {
-    const coverChk = r === 1 && c === b.entryCol ? checkProject(s, 'cubrir', c, r) : null;
+    const coverChk = r === 1 ? checkProject(s, 'cubrir', c, r) : null;
     body = (
       <>
         <p class="muted">
@@ -91,6 +91,7 @@ export function CellSheet({ s }: { s: GameState }) {
             <p class="small">{C.modules[m.type].desc}</p>
             <p class="small">
               {T.build.condition}: {Math.round(m.condition * 100)} %
+              {m.type === 'hidroponico' && ` · crecimiento ${m.growth ?? 0}/${HYDRO.growDays} días`}
             </p>
           </div>
         ) : proj && proj.c === c && proj.r === r ? (
@@ -124,7 +125,7 @@ export function CellSheet({ s }: { s: GameState }) {
             <div>
               <b>{T.build.cover}</b>
               <p class="small">
-                {T.build.coverDesc} · ahora {b.coverCm[c]} cm
+                {underHouse(b, c) ? T.build.coverDesc : T.build.coverDescGarden} · ahora {b.coverCm[c]} cm
               </p>
             </div>
             <div class="option-btns">

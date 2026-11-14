@@ -1,12 +1,12 @@
 /** Vista en corte lateral del búnker: cielo, casa, capas de tierra, salas y módulos. */
 import { useMemo } from 'preact/hooks';
-import { canDig, idx, moduleAt, shelterCell } from '../../core/bunker';
+import { canDig, idx, moduleAt, shelterCell, underHouse } from '../../core/bunker';
 import { clockHour, gridUp, isNight, modActive } from '../../core/env';
 import { batteryFrac } from '../../core/selectors';
 import type { GameState } from '../../core/types';
-import { C } from '../../i18n';
 import { selectedCell } from '../store';
 import { ModuleGlyph, Survivor } from './Glyphs';
+import { WeatherCanvas, type WeatherKind } from './WeatherCanvas';
 
 const CW = 100;
 const CH = 72;
@@ -16,7 +16,7 @@ interface Sky {
   top: string;
   bottom: string;
   ground: string;
-  particles?: 'ash' | 'snow' | 'rain' | 'stars';
+  particles?: 'ash' | 'snow' | 'rain' | 'stars' | 'dust';
   aurora?: boolean;
   smoke?: boolean;
   flood?: boolean;
@@ -45,7 +45,7 @@ function skyFor(s: GameState): Sky {
     case 'colapso':
       return night
         ? { top: '#070809', bottom: '#1b1d22', ground: '#3f4a33', smoke: true, particles: 'stars' }
-        : { top: '#7d8790', bottom: '#c7b79b', ground: '#5f6b3e', smoke: true };
+        : { top: '#7d8790', bottom: '#c7b79b', ground: '#5f6b3e', smoke: true, particles: 'dust' };
     case 'frio':
       return night
         ? { top: '#0a1424', bottom: '#2b3c55', ground: '#dfe7ee', particles: 'snow' }
@@ -92,8 +92,8 @@ export function BunkerView({ s, buildMode = false }: { s: GameState; buildMode?:
   const bat = batteryFrac(s) ?? 0;
   const waterLevel = Math.min(1, (s.inv.agua ?? 0) / 500);
   const sel = selectedCell.value;
-  const houseX = b.entryCol * CW - 35;
-  const particles = useMemo(() => hashPts(26, 7, W, SKY), [W]);
+  const houseX = (b.entryCol - 1) * CW + 8;
+  const HW = 3 * CW - 16;
   const stars = useMemo(() => hashPts(30, 3, W, SKY * 0.7), [W]);
   const speck = useMemo(() => hashPts(60, 11, CW, CH), []);
 
@@ -101,8 +101,10 @@ export function BunkerView({ s, buildMode = false }: { s: GameState; buildMode?:
     selectedCell.value = sel && sel.c === c && sel.r === r ? null : { c, r };
   };
 
+  const weather: WeatherKind = sky.particles === 'ash' || sky.particles === 'snow' || sky.particles === 'rain' || sky.particles === 'dust' ? sky.particles : null;
   return (
-    <svg class="bunker" viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Corte lateral del búnker">
+    <div class="bunker-wrap">
+    <svg class="bunker" viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Corte lateral del búnker. Toca una celda para excavar o construir.">
       <defs>
         <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stop-color={sky.top} />
@@ -166,34 +168,34 @@ export function BunkerView({ s, buildMode = false }: { s: GameState; buildMode?:
           <path d={`M${W * 0.85} ${SKY} q10 -30 -8 -60`} stroke="#3a3632" stroke-width="12" fill="none" stroke-linecap="round" />
         </g>
       )}
-      {(sky.particles === 'ash' || sky.particles === 'snow' || sky.particles === 'rain') && (
-        <g class={`fx fx-${sky.particles}`}>
-          {particles.map(([x, y, k], i) =>
-            sky.particles === 'rain' ? (
-              <line key={i} x1={x} y1={y} x2={x - 3} y2={y + 10} stroke="#a9c3d6" stroke-width="1" opacity="0.6" style={{ animationDelay: `${-k * 2}s` }} />
-            ) : (
-              <circle key={i} cx={x} cy={y} r={sky.particles === 'snow' ? 1.6 + k : 1 + k * 0.8} fill={sky.particles === 'snow' ? '#fff' : '#cfc6b8'} opacity="0.8" style={{ animationDelay: `${-k * 6}s` }} />
-            ),
-          )}
-        </g>
-      )}
-
-      {/* Casa sobre el acceso */}
+      {/* Casa sobre el acceso (ocupa tres columnas) */}
       <g transform={`translate(${houseX} 0)`}>
-        <rect x="0" y={SKY - 52} width="170" height="52" fill={night ? '#3a342d' : '#b8a68a'} stroke="#1a1612" stroke-width="2" />
-        <path d={`M-8 ${SKY - 50} L85 ${SKY - 88} L178 ${SKY - 50} Z`} fill={night ? '#4a2c24' : '#8c4a36'} stroke="#1a1612" stroke-width="2" />
-        <rect x="20" y={SKY - 40} width="26" height="20" fill={night && !s.plan.lights ? '#141210' : night ? '#3b3022' : '#7a9fb5'} stroke="#1a1612" />
-        <rect x="124" y={SKY - 40} width="26" height="20" fill={night ? '#141210' : '#7a9fb5'} stroke="#1a1612" />
-        <rect x="70" y={SKY - 36} width="24" height="36" fill="#5a3b28" stroke="#1a1612" />
-        {/* sacos terreros apilados en la planta baja, encima del sótano */}
-        {Array.from({ length: Math.round((b.coverCm[b.entryCol] ?? 0) / 10) }).map((_, i) => (
-          <g key={i}>
-            {[0, 1, 2, 3, 4].map((j) => (
-              <rect key={j} x={8 + j * 31 + (i % 2) * 12} y={SKY - 6 - i * 5} width="28" height="6" rx="3" fill="#a8956b" stroke="#5a4a2e" stroke-width="1" />
-            ))}
-          </g>
+        <rect x="0" y={SKY - 56} width={HW} height="56" fill={night ? '#3a342d' : '#b8a68a'} stroke="#1a1612" stroke-width="2" />
+        <path d={`M-10 ${SKY - 54} L${HW / 2} ${SKY - 100} L${HW + 10} ${SKY - 54} Z`} fill={night ? '#4a2c24' : '#8c4a36'} stroke="#1a1612" stroke-width="2" />
+        <rect x={HW - 70} y={SKY - 96} width="16" height="26" fill={night ? '#3d2620' : '#6f3a2b'} stroke="#1a1612" />
+        {[30, HW - 70].map((wx) => (
+          <rect key={wx} x={wx} y={SKY - 44} width="34" height="22" fill={night ? (s.plan.lights ? '#3b3022' : '#141210') : '#7a9fb5'} stroke="#1a1612" />
         ))}
+        <rect x={HW / 2 + 22} y={SKY - 38} width="26" height="38" fill="#5a3b28" stroke="#1a1612" />
       </g>
+      {/* Sacos terreros: dentro de la casa (planta baja) o montículo en el jardín */}
+      {b.coverCm.map((cm, c) => {
+        const layers = Math.round((cm ?? 0) / 10);
+        if (!layers) return null;
+        const x0 = c * CW;
+        if (underHouse(b, c))
+          return (
+            <g key={`cv${c}`}>
+              {Array.from({ length: layers }).map((_, i) =>
+                [0, 1, 2].map((j) => (
+                  <rect key={`${i}-${j}`} x={x0 + 6 + j * 30 + (i % 2) * 8} y={SKY - 7 - i * 5} width="27" height="6" rx="3" fill="#a8956b" stroke="#5a4a2e" stroke-width="1" />
+                )),
+              )}
+            </g>
+          );
+        const hgt = 4 + layers * 4;
+        return <path key={`cv${c}`} d={`M${x0 + 2} ${SKY} Q${x0 + CW / 2} ${SKY - hgt * 2} ${x0 + CW - 2} ${SKY} Z`} fill="#6e5038" stroke="#4a3426" stroke-width="1.5" />;
+      })}
 
       {/* Suelo y capas */}
       <rect x="0" y={SKY - 3} width={W} height="6" fill={sky.ground} />
@@ -263,7 +265,8 @@ export function BunkerView({ s, buildMode = false }: { s: GameState; buildMode?:
           −{((i + 1) * 2.5).toFixed(1).replace('.', ',')} m
         </text>
       ))}
-      <title>{C.cells.hueco}</title>
     </svg>
+    <WeatherCanvas kind={weather} heightPct={(SKY / H) * 100} />
+    </div>
   );
 }

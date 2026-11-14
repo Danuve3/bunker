@@ -120,6 +120,9 @@ h3 { font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.08em; colo
 @keyframes blink { 50% { opacity: 0.45; } }
 
 /* ── Búnker ── */
+.bunker-wrap { position: relative; }
+.weather { position: absolute; left: 1px; right: 1px; top: 1px; width: calc(100% - 2px); pointer-events: none; border-radius: var(--radius) var(--radius) 0 0; }
+.storage { display: flex; flex-direction: column; gap: 4px; }
 .bunker {
   width: 100%;
   height: auto;
@@ -140,10 +143,6 @@ h3 { font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.08em; colo
 @keyframes shake { 50% { transform: translateY(0.6px); } }
 .g-smoke { animation: smoke 2.4s ease-out infinite; }
 @keyframes smoke { from { transform: translateY(0); opacity: 0.6; } to { transform: translateY(-10px); opacity: 0; } }
-.fx circle, .fx line { animation: fall 6s linear infinite; }
-.fx-rain line { animation-duration: 0.9s; }
-.fx-snow circle { animation-duration: 9s; }
-@keyframes fall { from { transform: translate(0, -20px); } to { transform: translate(-14px, 120px); } }
 .aurora { animation: aurora 8s ease-in-out infinite alternate; }
 @keyframes aurora { from { opacity: 0.35; } to { opacity: 0.7; } }
 .zz { animation: zz 2s ease-in-out infinite; }
@@ -329,7 +328,7 @@ h3 { font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.08em; colo
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
-  .fx { display: none; }
+  .weather { display: none; }
 }
 @media (min-width: 420px) {
   .chips { grid-template-columns: repeat(3, 1fr); }

@@ -4,7 +4,7 @@ Roguelite de supervivencia para móvil (PWA). Un único superviviente prepara su
 
 **Jugar:** https://danuve3.github.io/bunker/
 
-> Estado: **hito 1** (núcleo de simulación, fase 0 y fases de crisis jugables). Hoja de ruta más abajo.
+> Estado: en desarrollo por hitos (ver hoja de ruta).
 
 ## Cómo se juega
 
@@ -86,7 +86,7 @@ La lista completa con enlaces está en `src/data/sources.ts`. Los valores que so
 
 - [x] H0: esqueleto y despliegue
 - [x] H1: núcleo de simulación, fase 0 y fase 1 jugables, autoguardado y tests
-- [ ] H2: construcción completa (capacidades, todos los módulos, averías) y clima en Canvas
+- [x] H2: construcción completa (almacén, 16 módulos, averías, sacos en casa o jardín) y clima en Canvas
 - [ ] H3: expediciones al exterior
 - [ ] H4: 60–80 eventos con «Dato real» y amenazas secundarias encadenadas
 - [ ] H5: perks, récords, semilla diaria y compartir

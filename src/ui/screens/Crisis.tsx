@@ -21,7 +21,7 @@ function ActPicker({ s, slot }: { s: GameState; slot: 'morning' | 'afternoon' | 
     <Sheet title={T.plan[slot]} onClose={close}>
       <ul class="act-list">
         {acts.map((a) => {
-          const disabled = (a === 'radio' && !(s.inv.radio_dinamo > 0)) || (a === 'construir' && !s.bunker.project);
+          const disabled = (a === 'radio' && !(s.inv.radio_dinamo > 0) && !has(s.bunker, 'radio')) || (a === 'construir' && !s.bunker.project);
           return (
             <li key={a}>
               <button

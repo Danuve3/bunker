@@ -4,7 +4,7 @@
  */
 import { AIR, DOSE, FALLOUT, POWER, THERMAL } from '../data/environment';
 import { CONSUMPTION } from '../data/items';
-import { MODULES } from '../data/modules';
+import { GEN_NOISE_BY_ROW, MODULES } from '../data/modules';
 import {
   ACTIVITY_INTENSITY,
   ENERGY,
@@ -40,6 +40,7 @@ export function emptyReport(s: GameState): DayReport {
     hoursDark: 0,
     hoursHighCo2: 0,
     hoursCold: 0,
+    hoursUnpowered: 0,
     notes: [],
   };
 }
@@ -131,7 +132,8 @@ function powerStep(s: GameState, act: HourAct, r: DayReport): PowerResult {
       s.inv.diesel -= fuel;
       r.fuelUsedL += fuel;
       s.batteryWh = Math.min(cap, s.batteryWh + chargeW * POWER.chargeEfficiency);
-      s.noise24 += POWER.generatorNoisePerH;
+      const genRow = Math.min(...working(b, 'generador').map((m) => m.r));
+      s.noise24 += POWER.generatorNoisePerH * GEN_NOISE_BY_ROW[Math.min(genRow, GEN_NOISE_BY_ROW.length - 1)];
       for (const m of working(b, 'generador')) m.condition -= MODULES.generador.wearPerDay / 24;
       powered = true;
     } else if (s.batteryWh >= loadW) {
@@ -140,6 +142,7 @@ function powerStep(s: GameState, act: HourAct, r: DayReport): PowerResult {
     }
   }
   if (powered) r.energyUsedWh += loadW;
+  else if (loadW > 0) r.hoursUnpowered++;
 
   let light = wantLight && powered;
   if (wantLight && !light && (s.inv.linterna ?? 0) > 0 && (s.inv.pilas ?? 0) > 0) {
@@ -349,7 +352,8 @@ export function simulateHour(s: GameState, rng: Rng, act0: HourAct, r: DayReport
   ) {
     const restMult = sleeping || int === 'reposo' ? HEALTH.restRegenMult : 1;
     const radMult = sv.acuteDoseMSv > DOSE.arsThreshold ? 0.4 : 1;
-    sv.health += HEALTH.regenPerH * restMult * radMult;
+    const infirmary = has(b, 'enfermeria') && restMult > 1 ? 1.3 : 1;
+    sv.health += HEALTH.regenPerH * restMult * radMult * infirmary;
   }
   sv.health = Math.min(100, sv.health);
 

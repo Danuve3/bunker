@@ -1,13 +1,13 @@
 /** Ciclo diario de la fase de crisis: franjas, fin de día, fases y crisis finales. */
 import { BLEACH, GAS, CONSUMPTION } from '../data/items';
-import { MAINTENANCE, MODULES } from '../data/modules';
+import { HYDRO, MAINTENANCE, MODULES, STORAGE } from '../data/modules';
 import { CARE, MORALE, WATER } from '../data/physiology';
 import { EVENT_CHANCE, phaseLength } from '../data/threats';
-import { built, doorStrength, has, working } from './bunker';
+import { built, doorStrength, has, hasLivingSpace, storageInfo, working } from './bunker';
 import { drawBoss, drawEvent, presentCard } from './cards';
 import { applyEffects } from './effects';
 import { looterRisk, modValue } from './env';
-import { loseFoodPct, spoil } from './food';
+import { addFood, loseFoodPct, spoil } from './food';
 import { clamp, log } from './log';
 import { progressProject } from './projects';
 import type { Rng } from './rng';
@@ -67,8 +67,8 @@ function finishFranja(s: GameState, act: DayActivity) {
       break;
     }
     case 'radio':
-      if ((s.inv.radio_dinamo ?? 0) > 0) {
-        sv.morale = clamp(sv.morale + MORALE.radioFranja, 0, 100);
+      if ((s.inv.radio_dinamo ?? 0) > 0 || has(b, 'radio')) {
+        sv.morale = clamp(sv.morale + MORALE.radioFranja + (has(b, 'radio') ? 2 : 0), 0, 100);
         log(s, `log.radio.${s.threat.primary}${(s.day % 3) + 1}`);
       } else log(s, 'log.sin_radio', undefined, 'warn');
       break;
@@ -127,7 +127,7 @@ function finishFranja(s: GameState, act: DayActivity) {
       break;
     }
     case 'vigilar':
-      s.threat.mods.push({ fromH: s.h, toH: s.h + 24, kind: 'looters', value: -0.08 });
+      s.threat.mods.push({ fromH: s.h, toH: s.h + 24, kind: 'looters', value: has(b, 'periscopio') ? -0.14 : -0.08 });
       break;
     case 'descansar':
       sv.morale = clamp(sv.morale + 1, 0, 100);
@@ -175,6 +175,13 @@ function endOfDay(s: GameState, rng: Rng, bossDay: boolean) {
   if (has(b, 'dormitorio')) dm += 1;
   for (const m of working(b, 'radio')) dm += MODULES.radio.moraleBonus! * m.condition;
   if (sv.infection?.stage === 'activa' || sv.injuries > 30) dm -= 2;
+  const st = storageInfo(s);
+  if (st.used > st.cap) {
+    dm += STORAGE.overMoralePerDay;
+    log(s, 'log.almacen_lleno', undefined, 'warn');
+  }
+  if (!hasLivingSpace(b)) dm -= 2;
+  if (working(b, 'hidroponico').length) dm += 1;
   sv.morale = clamp(sv.morale + dm, 0, 100);
   if (sv.morale < MORALE.breakdownBelow) log(s, 'log.crisis_nerviosa', undefined, 'bad');
 
@@ -187,6 +194,23 @@ function endOfDay(s: GameState, rng: Rng, bossDay: boolean) {
     }
   }
 
+  // Cultivo hidropónico: crece si tuvo luz y agua
+  for (const m of working(b, 'hidroponico')) {
+    const lit = 24 - r.hoursUnpowered >= HYDRO.minPoweredHours;
+    if (lit && (s.inv.agua ?? 0) >= HYDRO.waterLPerDay) {
+      s.inv.agua -= HYDRO.waterLPerDay;
+      m.growth = (m.growth ?? 0) + 1;
+      if (m.growth >= HYDRO.growDays) {
+        const kcal = (MODULES.hidroponico.kcalPerDay ?? 0) * m.condition;
+        addFood(s, 'fresco', kcal, s.h + 24 * 5);
+        if (m.growth === HYDRO.growDays) log(s, 'log.cosecha', undefined, 'good');
+      }
+    } else if ((m.growth ?? 0) > 0) {
+      m.growth = Math.max(0, (m.growth ?? 0) - 2);
+      log(s, 'log.cultivo_sufre', undefined, 'warn');
+    }
+  }
+
   // Caducidad
   const lost = spoil(s);
   if (lost > 0) log(s, 'log.caducado', { kcal: Math.round(lost) }, 'warn');
@@ -194,7 +218,7 @@ function endOfDay(s: GameState, rng: Rng, bossDay: boolean) {
   // Saqueadores nocturnos
   const risk = looterRisk(s);
   if (risk > 0 && rng.chance(Math.min(0.6, risk * 0.3))) {
-    const guard = s.plan.night === 'guardia' ? 0.25 : 0;
+    const guard = (s.plan.night === 'guardia' ? 0.25 : 0) + (has(b, 'periscopio') ? 0.1 : 0);
     const vig = modValue(s, 'looters') < 0 ? 0.15 : 0;
     if (rng.chance(clamp(doorStrength(b) + guard + vig, 0.05, 0.95))) log(s, 'log.saqueo_rechazado', undefined, 'warn');
     else {

@@ -2,7 +2,7 @@
 import { CONSUMPTION, EXCAVATOR, HANDLING_H_PER_UNIT, ITEMS, PANIC, SHOPS, type ShopId } from '../data/items';
 import { FATIGUE } from '../data/physiology';
 import { phaseLength } from '../data/threats';
-import { cellAt } from './bunker';
+import { cellAt, freeFor, storageInfo } from './bunker';
 import { clockHour } from './env';
 import { addFood } from './food';
 import { clamp, log } from './log';
@@ -42,7 +42,24 @@ export function tripHours(shop: ShopId, cart: Record<string, number>): number {
   return SHOPS[shop].tripH + (shop === 'online' || shop === 'alquiler' ? 0 : units * HANDLING_H_PER_UNIT);
 }
 
-export type BuyCheck = { ok: true; cost: number; hours: number } | { ok: false; reason: 'dinero' | 'tiempo' | 'existencias' | 'vacio' };
+export type BuyCheck = { ok: true; cost: number; hours: number } | { ok: false; reason: 'dinero' | 'tiempo' | 'existencias' | 'vacio' | 'espacio' };
+
+/** ¿Cabe la compra en el almacén del búnker? (los pedidos online se comprueban al pedir) */
+export function fitsStorage(s: GameState, cart: Record<string, number>): boolean {
+  let w = 0;
+  let kcal = 0;
+  let d = 0;
+  for (const [id, q] of Object.entries(cart)) {
+    const it = ITEMS[id];
+    if (it.kind === 'water') w += (it.liters ?? 0) * q;
+    else if (it.kind === 'fuel') d += (it.liters ?? 0) * q;
+    else if (it.kind === 'food') kcal += (it.kcal ?? 0) * q;
+  }
+  if (!w && !kcal && !d) return true;
+  const after: GameState = { ...s, inv: { ...s.inv, agua: (s.inv.agua ?? 0) + w, diesel: (s.inv.diesel ?? 0) + d }, food: [...s.food, { food: 'x', kcal, expiresH: 0 }] };
+  const st = storageInfo(after);
+  return st.used <= st.cap + 1e-6;
+}
 
 export function checkBuy(s: GameState, shop: ShopId, cart: Record<string, number>): BuyCheck {
   const entries = Object.entries(cart).filter(([, q]) => q > 0);
@@ -51,6 +68,7 @@ export function checkBuy(s: GameState, shop: ShopId, cart: Record<string, number
   const cost = cartCost(s, cart);
   const hours = tripHours(shop, cart);
   if (cost > s.money + 1e-9) return { ok: false, reason: 'dinero' };
+  if (!fitsStorage(s, cart)) return { ok: false, reason: 'espacio' };
   if (hours > hoursLeft(s)) return { ok: false, reason: 'tiempo' };
   return { ok: true, cost, hours };
 }
@@ -149,7 +167,13 @@ export function workPrep(s: GameState, rng: Rng, maxHours: number) {
   }
 }
 
-export type PrepActionId = 'banera' | 'bidones' | 'dormir' | 'descansar' | 'encerrarse';
+export type PrepActionId = 'banera' | 'bidones' | 'deposito' | 'dormir' | 'descansar' | 'encerrarse';
+
+/** Litros que caben ahora mismo en los depósitos de agua. */
+export function tankRoom(s: GameState): number {
+  const st = storageInfo(s);
+  return Math.max(0, Math.min(st.waterExtra - st.waterL, freeFor(s, 'water')));
+}
 
 export function prepAction(s: GameState, rng: Rng, id: PrepActionId) {
   switch (id) {
@@ -168,6 +192,14 @@ export function prepAction(s: GameState, rng: Rng, id: PrepActionId) {
       s.inv.agua = (s.inv.agua ?? 0) + 25 * n;
       log(s, 'log.bidones', { n, l: 25 * n }, 'good');
       passPrepTime(s, rng, Math.max(1, Math.ceil(n * CONSUMPTION.bidonFillH)), 'ligero');
+      break;
+    }
+    case 'deposito': {
+      const l = Math.floor(tankRoom(s));
+      if (l <= 0) return;
+      s.inv.agua = (s.inv.agua ?? 0) + l;
+      log(s, 'log.deposito', { l }, 'good');
+      passPrepTime(s, rng, Math.max(1, Math.ceil((l / 500) * CONSUMPTION.tankFillH)), 'ligero');
       break;
     }
     case 'dormir':

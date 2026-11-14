@@ -84,9 +84,11 @@ function applyEffect(s: GameState, rng: Rng, e: EffectSpec) {
     case 'log':
       log(s, e.key);
       break;
-    case 'cover':
-      s.bunker.coverCm[s.bunker.entryCol] = Math.min(COVER.maxCm, (s.bunker.coverCm[s.bunker.entryCol] ?? 0) + e.cm);
+    case 'cover': {
+      const c = shelterCell(s.bunker).c;
+      s.bunker.coverCm[c] = Math.min(COVER.maxCm, (s.bunker.coverCm[c] ?? 0) + e.cm);
       break;
+    }
     case 'special':
       special(s, rng, e.id);
       break;

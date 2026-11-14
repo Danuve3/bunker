@@ -46,6 +46,8 @@ export interface ModuleInst {
   /** 0..1: desgaste. Por debajo de 0,25 puede averiarse. */
   condition: number;
   broken: boolean;
+  /** Días de crecimiento (hidropónico). */
+  growth?: number;
 }
 
 export type ProjectKind = 'excavar' | 'construir' | 'cubrir';
@@ -301,5 +303,6 @@ export interface DayReport {
   hoursDark: number;
   hoursHighCo2: number;
   hoursCold: number;
+  hoursUnpowered: number;
   notes: LogEntry[];
 }
