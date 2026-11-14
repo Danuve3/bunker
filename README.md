@@ -92,5 +92,5 @@ La lista completa con enlaces está en `src/data/sources.ts`. Los valores que so
 - [x] H5: 34 perks (1 de 3), récords y estadísticas, racha del Búnker del día, compartir
 - [x] H6: PWA completa (manifest, iconos y splash generados, Service Worker offline versionado, aviso de actualización, instalar)
 - [x] H7: audio generativo (viento, lluvia, generador, Geiger, latido, efectos, alarmas) y vibración, con ajustes
-- [ ] H8: tutorial guiado
+- [x] H8: tutorial guiado (13 pasos, fase 0 y 1 cortas, saltable y repetible)
 - [ ] H9: balanceo, accesibilidad y pulido

@@ -1,7 +1,7 @@
 /** Creación de una partida nueva a partir de una semilla. */
 import { AIR, FALLOUT, GRID, THERMAL } from '../data/environment';
 import { MORALE } from '../data/physiology';
-import { CLIMATE, CLIMATE_VARIANTS, SECONDARY, SECONDARY_CHANCE, SECONDARY_PHASES, THREATS, THREAT_IDS, phaseLength } from '../data/threats';
+import { CLIMATE, CLIMATE_VARIANTS, SECONDARY, SECONDARY_CHANCE, SECONDARY_PHASES, THREATS, THREAT_IDS, TUTORIAL, phaseLength } from '../data/threats';
 import { Rng } from './rng';
 import { generateMap } from './expedition';
 import type { Bunker, CellKind, DayPlan, GameMode, GameState, ThreatId, ThreatState } from './types';
@@ -90,9 +90,22 @@ export interface NewGameOptions {
 
 export function newGame(seed: string, opts: NewGameOptions = {}): GameState {
   const rng = Rng.fromSeed(seed);
-  const primary = opts.threat ?? rng.pick(THREAT_IDS);
-  const startClock = rng.int(7, 17);
-  const { threat, budget } = makeThreat(rng, primary, 0);
+  const tutorial = opts.mode === 'tutorial';
+  const primary = tutorial ? 'nuclear' : (opts.threat ?? rng.pick(THREAT_IDS));
+  const rolledClock = rng.int(7, 17);
+  const startClock = tutorial ? TUTORIAL.startClock : rolledClock;
+  const made = makeThreat(rng, primary, 0);
+  const { threat } = made;
+  let budget = made.budget;
+  if (tutorial) {
+    threat.eventH = TUTORIAL.prepH;
+    threat.fallout = [{ atH: TUTORIAL.prepH, r1: TUTORIAL.r1 }];
+    threat.secondary = undefined;
+    threat.secondaryFromPhase = undefined;
+    threat.gridUntilH = TUTORIAL.prepH;
+    threat.waterMainsUntilH = TUTORIAL.prepH + 12;
+    budget = TUTORIAL.budget;
+  }
   const bunker = makeBunker(rng);
   const map = generateMap(rng);
 
@@ -151,7 +164,7 @@ export function newGame(seed: string, opts: NewGameOptions = {}): GameState {
     deathCause: null,
     noise24: 0,
     visibility: 0,
-    tutorial: null,
+    tutorial: tutorial ? { step: 0, done: false } : null,
     map,
     away: null,
     pendingEncounter: null,

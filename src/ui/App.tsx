@@ -7,6 +7,7 @@ import { CrisisScreen } from './screens/Crisis';
 import { CardModal, DeathScreen, PhaseEnd } from './screens/Overlays';
 import { RecordsScreen } from './screens/Records';
 import { SettingsScreen } from './screens/Settings';
+import { TutorialCoach } from './screens/Tutorial';
 import { startTutorial } from './store';
 
 export function App() {
@@ -33,20 +34,31 @@ export function App() {
 function Main() {
   if (screen.value === 'howto') return <HowTo />;
   if (screen.value === 'records') return <RecordsScreen />;
-  if (screen.value === 'settings') return <SettingsScreen onTutorial={() => startTutorial()} />;
+  if (screen.value === 'settings') return <SettingsScreen onTutorial={startTutorial} />;
   const s = game.value;
   if (screen.value === 'menu' || !s) return <Menu />;
   switch (s.stage) {
     case 'briefing':
-      return <Briefing s={s} />;
+      return (
+        <>
+          <Briefing s={s} />
+          {s.tutorial && <TutorialCoach s={s} />}
+        </>
+      );
     case 'prep':
-      return <PrepScreen s={s} />;
+      return (
+        <>
+          <PrepScreen s={s} />
+          {s.tutorial && <TutorialCoach s={s} />}
+        </>
+      );
     case 'dead':
       return <DeathScreen s={s} />;
     default:
       return (
         <>
           <CrisisScreen s={s} />
+          {s.tutorial && <TutorialCoach s={s} />}
           {(s.stage === 'event' || s.stage === 'boss') && <CardModal s={s} />}
           {s.stage === 'phaseEnd' && <PhaseEnd s={s} />}
         </>

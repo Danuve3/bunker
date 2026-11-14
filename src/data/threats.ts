@@ -67,6 +67,9 @@ export function phasePressure(phase: number): number {
   return 1 + 0.25 * (phase - 1);
 }
 
+/** Tutorial: partida nuclear corta y moderada (valores fijos). */
+export const TUTORIAL = { prepH: 24, budget: 4000, r1: 350, startClock: 9, phase1Days: 2 } as const;
+
 /** Probabilidad de evento al final de cada día (si no hay crisis final). */
 export const EVENT_CHANCE = 0.55;
 export const EVENT_COOLDOWN_DAYS = 0;

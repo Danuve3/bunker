@@ -361,3 +361,25 @@ h3 { font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.08em; colo
 .slider input[type='range'] { width: 100%; height: 44px; accent-color: var(--accent); }
 .settings .panel .tog { justify-content: space-between; display: flex; }
 .topbar .mute { font-size: 1.05rem; min-width: 44px; }
+
+/* ── Tutorial ── */
+.coach {
+  position: fixed;
+  bottom: calc(78px + var(--sa-b));
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(540px, calc(100% - 20px));
+  z-index: 30;
+  background: color-mix(in srgb, var(--panel2) 96%, transparent);
+  border: 2px solid var(--accent);
+  border-radius: 14px;
+  padding: 10px 12px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.55);
+  animation: fade 0.2s;
+}
+.coach-kind { margin: 0; font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); font-weight: 800; }
+.coach-text { margin: 4px 0 8px; font-size: 0.92rem; }
+.coach .btn { min-height: 44px; }
+.with-coach .sheet-wrap { padding-bottom: calc(var(--coach-h, 150px) + 84px + var(--sa-b)); }
+.with-coach .sheet { max-height: calc(100dvh - var(--coach-h, 150px) - 110px); border-radius: 18px; }
+.with-coach .screen { padding-bottom: calc(var(--coach-h, 150px) + 110px + var(--sa-b)); }

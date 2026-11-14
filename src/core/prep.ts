@@ -1,7 +1,7 @@
 /** Fase 0: compras, obras y gestión del tiempo hasta el evento. */
 import { CONSUMPTION, EXCAVATOR, HANDLING_H_PER_UNIT, ITEMS, PANIC, SHOPS, type ShopId } from '../data/items';
 import { FATIGUE } from '../data/physiology';
-import { phaseLength } from '../data/threats';
+import { TUTORIAL, phaseLength } from '../data/threats';
 import { cellAt, freeFor, storageInfo } from './bunker';
 import { clockHour } from './env';
 import { addFood } from './food';
@@ -225,7 +225,7 @@ export function startCrisis(s: GameState, rng: Rng) {
   s.stage = 'crisis';
   s.phase = 1;
   s.phaseDay = 1;
-  s.phaseLength = phaseLength(1);
+  s.phaseLength = s.mode === 'tutorial' ? TUTORIAL.phase1Days : phaseLength(1);
   const lost = s.deliveries.length;
   s.deliveries = [];
   log(s, `log.evento.${s.threat.variant ?? s.threat.primary}`, undefined, 'bad');

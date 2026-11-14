@@ -5,7 +5,8 @@ import { dailySeed } from '../../core/rng';
 import type { GameState } from '../../core/types';
 import { C, T, num } from '../../i18n';
 import { Sheet } from '../components/ui';
-import { act, randomSeed, resume, savedRun, screen, start, startDaily } from '../store';
+import { act, records, randomSeed, resume, savedRun, screen, start, startDaily, startTutorial } from '../store';
+import { settings } from '../settings';
 import { canInstall, isIOS, isStandalone, promptInstall } from '../../pwa/register';
 
 export function Menu() {
@@ -42,7 +43,12 @@ export function Menu() {
             </span>
           </button>
         )}
-        <button class={`btn wide big ${savedRun.value ? '' : 'primary'}`} onClick={guard(() => start(randomSeed(), 'normal'))}>
+        {!settings.value.tutorialDone && records.value.runs === 0 && !savedRun.value && (
+          <button class="btn primary wide big" onClick={startTutorial}>
+            {T.tutorial.firstTime}
+          </button>
+        )}
+        <button class={`btn wide big ${savedRun.value || (!settings.value.tutorialDone && records.value.runs === 0) ? '' : 'primary'}`} onClick={guard(() => start(randomSeed(), 'normal'))}>
           {T.menu.newGame}
         </button>
         <button class="btn wide" onClick={guard(startDaily)}>
@@ -63,6 +69,9 @@ export function Menu() {
           </button>
         )}
         <div class="row">
+          <button class="btn ghost" onClick={guard(startTutorial)}>
+            {T.tutorial.menu}
+          </button>
           <button class="btn ghost" onClick={() => (screen.value = 'records')}>
             {T.menu.records}
           </button>

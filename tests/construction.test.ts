@@ -56,3 +56,17 @@ describe('Construcción y almacén', () => {
     expect(s.bunker.modules.some((m) => m.type === 'letrina')).toBe(true);
   });
 });
+
+describe('Tutorial', () => {
+  it('partida nuclear corta y moderada, sin amenaza secundaria', () => {
+    const s = newGame('TUTORIAL', { mode: 'tutorial' });
+    expect(s.threat.primary).toBe('nuclear');
+    expect(s.threat.eventH).toBe(24);
+    expect(s.budget).toBe(4000);
+    expect(s.threat.secondary).toBeUndefined();
+    expect(s.tutorial).toEqual({ step: 0, done: false });
+    let g = dispatch(s, { t: 'begin' });
+    g = dispatch(g, { t: 'prep', id: 'encerrarse' });
+    expect(g.phaseLength).toBe(2);
+  });
+});

@@ -26,10 +26,11 @@ export type Action =
   | { t: 'advanceDay' }
   | { t: 'choose'; choice: string }
   | { t: 'nextPhase' }
-  | { t: 'pickPerk'; id: string };
+  | { t: 'pickPerk'; id: string }
+  | { t: 'tutorial'; step: number; done?: boolean };
 
 export function dispatch(state: GameState, a: Action): GameState {
-  if (state.stage === 'dead') return state;
+  if (state.stage === 'dead' && a.t !== 'tutorial') return state;
   const s = structuredClone(state);
   const rng = new Rng(s.rng);
   switch (a.t) {
@@ -74,6 +75,9 @@ export function dispatch(state: GameState, a: Action): GameState {
           }
         }
       }
+      break;
+    case 'tutorial':
+      if (s.tutorial) s.tutorial = { step: a.step, done: !!a.done };
       break;
     case 'pickPerk':
       if (s.stage === 'phaseEnd' && pickPerk(s, rng, a.id)) {
