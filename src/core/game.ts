@@ -9,6 +9,7 @@ import { runBossDay, runDay, nextPhase } from './day';
 import { presentCard, resolveChoice } from './cards';
 import { ALL_CARDS } from '../data/cards';
 import { log } from './log';
+import { pickPerk } from './perks';
 import { buy, prepAction, workPrep, hoursLeft, type PrepActionId } from './prep';
 import { cancelProject, startProject } from './projects';
 import { Rng } from './rng';
@@ -24,7 +25,8 @@ export type Action =
   | { t: 'plan'; plan: Partial<DayPlan> }
   | { t: 'advanceDay' }
   | { t: 'choose'; choice: string }
-  | { t: 'nextPhase' };
+  | { t: 'nextPhase' }
+  | { t: 'pickPerk'; id: string };
 
 export function dispatch(state: GameState, a: Action): GameState {
   if (state.stage === 'dead') return state;
@@ -73,8 +75,15 @@ export function dispatch(state: GameState, a: Action): GameState {
         }
       }
       break;
+    case 'pickPerk':
+      if (s.stage === 'phaseEnd' && pickPerk(s, rng, a.id)) {
+        nextPhase(s);
+        const next = s.cardQueue.shift();
+        if (next) presentCard(s, rng, next);
+      }
+      break;
     case 'nextPhase':
-      if (s.stage === 'phaseEnd') {
+      if (s.stage === 'phaseEnd' && !s.perkOffer?.length) {
         nextPhase(s);
         const next = s.cardQueue.shift();
         if (next) presentCard(s, rng, next);

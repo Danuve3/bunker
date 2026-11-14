@@ -149,7 +149,7 @@ export function playBot(s: GameState, bot: BotId, maxDays = 200): GameState {
       s = dispatch(s, dailyPlan(s, bot));
       s = dispatch(s, { t: 'advanceDay' });
     } else if (s.stage === 'event' || s.stage === 'boss') s = dispatch(s, { t: 'choose', choice: chooseCard(s) });
-    else if (s.stage === 'phaseEnd') s = dispatch(s, { t: 'nextPhase' });
+    else if (s.stage === 'phaseEnd') s = s.perkOffer?.length ? dispatch(s, { t: 'pickPerk', id: s.perkOffer[0] }) : dispatch(s, { t: 'nextPhase' });
     else break;
   }
   return s;

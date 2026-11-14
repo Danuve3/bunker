@@ -6,6 +6,7 @@ import { addFood, loseFoodPct, removeKcal } from './food';
 import { clamp, log } from './log';
 import type { Rng } from './rng';
 import { infect } from './sim';
+import { perkMods } from './perks';
 import type { EffectSpec, GameState, SpecialEffect } from './types';
 
 export function applyEffects(s: GameState, rng: Rng, effects: EffectSpec[]) {
@@ -37,8 +38,8 @@ function applyEffect(s: GameState, rng: Rng, e: EffectSpec) {
       break;
     }
     case 'stat': {
-      const max = 100;
-      sv[e.stat] = clamp(sv[e.stat] + e.n, 0, max);
+      const n = e.stat === 'injuries' && e.n > 0 ? e.n * perkMods(s).injuryMult : e.n;
+      sv[e.stat] = clamp(sv[e.stat] + n, 0, 100);
       break;
     }
     case 'dose':
@@ -170,7 +171,7 @@ function special(s: GameState, rng: Rng, id: SpecialEffect) {
 
 function assaultFight(s: GameState, rng: Rng, bonus: number) {
   const guard = s.plan.night === 'guardia' ? 0.1 : 0;
-  const p = clamp(doorStrength(s.bunker) + bonus + guard, 0.05, 0.95);
+  const p = clamp(doorStrength(s.bunker) + bonus + guard + perkMods(s).doorAdd, 0.05, 0.95);
   if (rng.chance(p)) {
     log(s, 'log.asalto_rechazado', undefined, 'good');
     s.survivor.fatigue = clamp(s.survivor.fatigue + 15, 0, 100);

@@ -2,6 +2,7 @@
 import { FALLOUT, THERMAL } from '../data/environment';
 import { phasePressure } from '../data/threats';
 import type { EnvMod, GameState } from './types';
+import { perkMods } from './perks';
 
 export const clockHour = (s: GameState, h = s.h) => (s.startClock + h) % 24;
 export const isNight = (s: GameState, h = s.h) => {
@@ -53,5 +54,5 @@ export function outdoorInfection(s: GameState, h = s.h): number {
 export function looterRisk(s: GameState, h = s.h): number {
   if (h < s.threat.eventH) return 0;
   const base = s.threat.looterPressure * phasePressure(Math.max(1, s.phase));
-  return Math.max(0, base + modValue(s, 'looters', h) + s.noise24 * 0.012 + s.visibility * 0.01);
+  return Math.max(0, (base + modValue(s, 'looters', h) + s.noise24 * 0.012 + s.visibility * 0.01) * perkMods(s).looterMult);
 }

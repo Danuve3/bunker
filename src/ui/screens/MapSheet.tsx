@@ -68,7 +68,7 @@ export function MapSheet({ s, slot }: { s: GameState; slot: 'morning' | 'afterno
       {loc && (
         <div class="loc-info">
           <h3>{placeName(loc.id, loc.variant)}</h3>
-          <p class="small">{fmt(T.map.dist, { d: num(loc.distKm, 1), t: num(travelHours(loc), 1), s: num(searchHours(loc), 1) })}</p>
+          <p class="small">{fmt(T.map.dist, { d: num(loc.distKm, 1), t: num(travelHours(loc, s), 1), s: num(searchHours(loc, s), 1) })}</p>
           <p class="small">
             {T.map.loot}: {lootCategories(loc.type).map((c) => C.focus[c]).join(' · ')} — <b>{T.map.looted[lootedLv(loc.looted)]}</b>
             {loc.visits > 0 && ` · ${fmt(T.map.visits, { n: loc.visits })}`}

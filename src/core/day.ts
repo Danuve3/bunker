@@ -10,6 +10,7 @@ import { looterRisk, modValue } from './env';
 import { addFood, loseFoodPct, spoil } from './food';
 import { clamp, log } from './log';
 import { progressProject } from './projects';
+import { offerPerks, perkMods } from './perks';
 import { beginExpedition, finishExpedition } from './expedition';
 import type { Rng } from './rng';
 import { efficiency, emptyReport, simulateHour, type HourAct } from './sim';
@@ -34,6 +35,7 @@ function hours(s: GameState, rng: Rng, n: number, act: HourAct) {
 
 /** Efectos al terminar una franja de 6 h de actividad diurna. */
 function finishFranja(s: GameState, act: DayActivity) {
+  const pm = perkMods(s);
   const sv = s.survivor;
   const eff = efficiency(s);
   const b = s.bunker;
@@ -46,7 +48,7 @@ function finishFranja(s: GameState, act: DayActivity) {
         broken.condition = 0.5;
         log(s, 'log.reparado', { module: broken.type }, 'good');
       } else if (broken) log(s, 'log.sin_material_reparar', { module: broken.type }, 'warn');
-      let budget = MAINTENANCE.conditionPerFranja * eff * (has(b, 'taller') ? MODULES.taller.repairMult! : 1);
+      let budget = MAINTENANCE.conditionPerFranja * eff * (has(b, 'taller') ? MODULES.taller.repairMult! : 1) * pm.repairMult;
       const sorted = b.modules.filter((m) => !m.broken).sort((a, c) => a.condition - c.condition);
       for (const m of sorted) {
         if (budget <= 0) break;
@@ -57,19 +59,20 @@ function finishFranja(s: GameState, act: DayActivity) {
       break;
     }
     case 'construir':
-      if (b.project) progressProject(s, 6 * eff);
+      if (b.project) progressProject(s, 6 * eff * pm.buildMult * (b.project.kind === 'excavar' ? pm.digMult : 1));
       else log(s, 'log.sin_proyecto', undefined, 'warn');
       break;
     case 'ocio': {
       let m = MORALE.ocioFranja * eff;
       for (const o of working(b, 'ocio')) m += MORALE.ocioModuleBonus * o.condition;
       if ((s.inv.libros_juegos ?? 0) > 0) m += MORALE.booksBonus;
+      m *= pm.ocioMult;
       sv.morale = clamp(sv.morale + m, 0, 100);
       break;
     }
     case 'radio':
       if ((s.inv.radio_dinamo ?? 0) > 0 || has(b, 'radio')) {
-        sv.morale = clamp(sv.morale + MORALE.radioFranja + (has(b, 'radio') ? 2 : 0), 0, 100);
+        sv.morale = clamp(sv.morale + MORALE.radioFranja + (has(b, 'radio') ? 2 : 0) + pm.radioMoraleAdd, 0, 100);
         log(s, `log.radio.${s.threat.primary}${(s.day % 3) + 1}`);
       } else log(s, 'log.sin_radio', undefined, 'warn');
       break;
@@ -77,11 +80,11 @@ function finishFranja(s: GameState, act: DayActivity) {
       let did = false;
       if (sv.injuries > 0 && (s.inv.botiquin ?? 0) > 0) {
         s.inv.botiquin = Math.max(0, s.inv.botiquin - 0.34);
-        sv.injuries = Math.max(0, sv.injuries - CARE.bandageInjury * (has(b, 'enfermeria') ? 1.5 : 1));
+        sv.injuries = Math.max(0, sv.injuries - CARE.bandageInjury * (has(b, 'enfermeria') ? 1.5 : 1) * pm.healMult);
         did = true;
       }
       if (sv.infection?.stage === 'activa') {
-        sv.infection.peak *= 1 - CARE.curarPeakReduction;
+        sv.infection.peak *= 1 - CARE.curarPeakReduction * pm.healMult * (has(b, 'enfermeria') ? 1.5 : 1);
         if (sv.infection.kind === 'gastro' && (s.inv.sro ?? 0) > 0) {
           s.inv.sro -= 1;
           s.inv.sroActivo = 48;
@@ -102,7 +105,7 @@ function finishFranja(s: GameState, act: DayActivity) {
       break;
     }
     case 'potabilizar': {
-      const mult = has(b, 'purificador') ? MODULES.purificador.potabilizeMult! : 1;
+      const mult = (has(b, 'purificador') ? MODULES.purificador.potabilizeMult! : 1) * pm.potabilizeMult;
       let liters = Math.min(s.inv.aguaBruta ?? 0, CONSUMPTION.potabilizarLPerH * 6 * eff * mult);
       let method = '';
       if (liters <= 0) {
@@ -115,8 +118,8 @@ function finishFranja(s: GameState, act: DayActivity) {
         s.inv.lejia_ml -= liters * BLEACH.mlPerLiter;
         method = 'lejia';
       } else if ((s.inv.hornillo ?? 0) > 0 && (s.inv.gas ?? 0) > 0) {
-        liters = Math.min(liters, s.inv.gas * GAS.litersBoiledPerCartridge);
-        s.inv.gas -= liters / GAS.litersBoiledPerCartridge;
+        liters = Math.min(liters, (s.inv.gas * GAS.litersBoiledPerCartridge) / pm.gasMult);
+        s.inv.gas -= (liters / GAS.litersBoiledPerCartridge) * pm.gasMult;
         method = 'hervir';
       } else {
         log(s, 'log.sin_metodo_potabilizar', undefined, 'warn');
@@ -178,12 +181,15 @@ function endOfDay(s: GameState, rng: Rng, bossDay: boolean) {
   s.stats.daysSurvived = s.day;
 
   // Moral diaria
-  let dm = MORALE.dailyIsolation;
+  const pm = perkMods(s);
+  let dm = MORALE.dailyIsolation + pm.moraleDailyAdd;
   if (r.hoursDark > 10) dm += MORALE.darkness;
   else if (r.hoursDark > 4) dm += MORALE.darkness / 2;
   if (r.hoursHighCo2 > 8) dm += MORALE.highCo2;
-  if (s.plan.food === 'minima') dm += MORALE.hunger;
-  else if (s.plan.food === 'reducida') dm += MORALE.hunger / 3;
+  if (!pm.noHungerMorale) {
+    if (s.plan.food === 'minima') dm += MORALE.hunger;
+    else if (s.plan.food === 'reducida') dm += MORALE.hunger / 3;
+  }
   if (sv.waterDeficitL > WATER.deficitThirstL) dm += MORALE.thirst;
   if (sv.hygiene < 30) dm += MORALE.dirty;
   if (has(b, 'dormitorio')) dm += 1;
@@ -234,13 +240,13 @@ function endOfDay(s: GameState, rng: Rng, bossDay: boolean) {
   if (risk > 0 && rng.chance(Math.min(0.6, risk * 0.3))) {
     const guard = (s.plan.night === 'guardia' ? 0.25 : 0) + (has(b, 'periscopio') ? 0.1 : 0);
     const vig = modValue(s, 'looters') < 0 ? 0.15 : 0;
-    if (rng.chance(clamp(doorStrength(b) + guard + vig, 0.05, 0.95))) log(s, 'log.saqueo_rechazado', undefined, 'warn');
+    if (rng.chance(clamp(doorStrength(b) + guard + vig + pm.doorAdd, 0.05, 0.95))) log(s, 'log.saqueo_rechazado', undefined, 'warn');
     else {
       const k = loseFoodPct(s, rng.int(8, 20));
       const w = Math.round((s.inv.agua ?? 0) * 0.12);
       s.inv.agua -= w;
       sv.morale = clamp(sv.morale - 6, 0, 100);
-      if (rng.chance(0.3)) sv.injuries = clamp(sv.injuries + rng.int(8, 20), 0, 100);
+      if (rng.chance(0.3)) sv.injuries = clamp(sv.injuries + rng.int(8, 20) * pm.injuryMult, 0, 100);
       log(s, 'log.saqueo', { kcal: Math.round(k), agua: w }, 'bad');
     }
   }
@@ -292,6 +298,7 @@ export function runBossDay(s: GameState, rng: Rng) {
   s.stage = 'phaseEnd';
   s.stats.bossesBeaten++;
   log(s, 'log.fase_superada', { phase: s.phase }, 'good');
+  offerPerks(s, rng);
 }
 
 export function nextPhase(s: GameState) {

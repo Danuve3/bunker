@@ -6,6 +6,7 @@ import { cardEligible } from './cards';
 import { outdoorDoseRate, outdoorInfection } from './env';
 import { addFood } from './food';
 import { log } from './log';
+import { perkMods } from './perks';
 import type { Rng } from './rng';
 import type { ExpPlan, GameState, Location, LootFocus } from './types';
 
@@ -29,8 +30,8 @@ export function generateMap(rng: Rng): Location[] {
   return out.sort((a, b) => a.distKm - b.distKm);
 }
 
-export const travelHours = (loc: Location) => (2 * loc.distKm) / EXPEDITION.walkKmH;
-export const searchHours = (loc: Location) => Math.max(0.5, EXPEDITION.franjaH - travelHours(loc));
+export const travelHours = (loc: Location, s?: GameState) => (2 * loc.distKm) / (EXPEDITION.walkKmH * (s ? perkMods(s).travelMult : 1));
+export const searchHours = (loc: Location, s?: GameState) => Math.max(0.5, EXPEDITION.franjaH - travelHours(loc, s));
 
 /** Factor de dosis fuera: mitad en la calle (PF 1), mitad dentro de edificios. */
 export function exposureFactor(loc: Location): number {
@@ -54,7 +55,7 @@ export function estimateInfection(s: GameState, loc: Location): number {
 export function encounterChance(s: GameState, loc: Location): number {
   const d = LOCATIONS[loc.type as LocType];
   const hot = d.hot?.includes(s.threat.primary) ? 1.5 : 1;
-  return Math.min(0.85, d.encounter * hot * (0.5 + s.threat.looterPressure * 2) * phasePressure(Math.max(1, s.phase)));
+  return Math.min(0.85, d.encounter * hot * (0.5 + s.threat.looterPressure * 2) * phasePressure(Math.max(1, s.phase)) * perkMods(s).encounterMult);
 }
 
 const weightOf = (id: string) => WEIGHT[id] ?? DEFAULT_WEIGHT;
@@ -71,15 +72,16 @@ export function finishExpedition(s: GameState, rng: Rng, plan: ExpPlan) {
   s.away = null;
   if (!loc || s.stage === 'dead') return;
   const data = LOCATIONS[loc.type as LocType];
-  const frac = Math.min(1, searchHours(loc) / EXPEDITION.fullSearchH);
+  const pm = perkMods(s);
+  const frac = Math.min(1, searchHours(loc, s) / EXPEDITION.fullSearchH);
   const avail = 1 - loc.looted;
-  let carry = EXPEDITION.carryKg;
+  let carry = EXPEDITION.carryKg + pm.carryKgAdd;
   const order = [...data.loot].sort((a, b) => Number(b.cat === plan.focus) - Number(a.cat === plan.focus));
   const got: string[] = [];
   for (const e of order) {
     const pFind = e.p * Math.sqrt(avail) * Math.min(1, frac + 0.25) * (e.cat === plan.focus ? 1.25 : 1);
     if (!rng.chance(Math.min(0.95, pFind))) continue;
-    let n = rng.int(e.min, e.max) * Math.max(0.3, frac) * (0.4 + 0.6 * avail);
+    let n = rng.int(e.min, e.max) * Math.max(0.3, frac) * (0.4 + 0.6 * avail) * pm.lootMult;
     n = Math.floor(Math.min(n, carry / weightOf(e.id)));
     if (n <= 0) continue;
     carry -= n * weightOf(e.id);
@@ -93,7 +95,7 @@ export function finishExpedition(s: GameState, rng: Rng, plan: ExpPlan) {
   s.visibility += EXPEDITION.visibilityPerTrip;
   log(s, got.length ? 'log.botin' : 'log.sin_botin', { loot: got.join(';'), place: loc.id }, got.length ? 'good' : 'warn');
   if (rng.chance(data.injury)) {
-    s.survivor.injuries = Math.min(100, s.survivor.injuries + rng.int(8, 20));
+    s.survivor.injuries = Math.min(100, s.survivor.injuries + rng.int(8, 20) * pm.injuryMult);
     log(s, 'log.herida_fuera', undefined, 'warn');
   }
   if (!s.pendingEncounter && rng.chance(encounterChance(s, loc))) {

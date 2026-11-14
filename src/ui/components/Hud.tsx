@@ -1,6 +1,7 @@
 /** Indicadores de recursos críticos y estado del superviviente. */
 import { gridUp, mainsUp, outdoorTemp } from '../../core/env';
 import { edibleKcal, totalKcal } from '../../core/food';
+import { perkMods } from '../../core/perks';
 import { airQual, alerts, batteryFrac, doseQual, foodDays, hydrationPct, insideDoseRate, nutritionPct, waterDays } from '../../core/selectors';
 import type { GameState } from '../../core/types';
 import { C, T, fmt, num } from '../../i18n';
@@ -13,9 +14,10 @@ export function ResourceChips({ s }: { s: GameState }) {
   const wd = waterDays(s);
   const fd = foodDays(s);
   const bf = batteryFrac(s);
-  const hasCo2 = (s.inv.medidor_co2 ?? 0) > 0;
+  const pm = perkMods(s);
+  const hasCo2 = (s.inv.medidor_co2 ?? 0) > 0 || pm.seeCo2;
   const aq = airQual(s.bunker.co2ppm);
-  const hasDos = (s.inv.dosimetro ?? 0) > 0;
+  const hasDos = (s.inv.dosimetro ?? 0) > 0 || pm.seeDose;
   const dr = insideDoseRate(s);
   const after = s.h >= s.threat.eventH;
   const t = s.bunker.interiorTempC;
@@ -79,7 +81,7 @@ export function AlertBar({ s }: { s: GameState }) {
 
 export function SurvivorPanel({ s }: { s: GameState }) {
   const sv = s.survivor;
-  const hasDos = (s.inv.dosimetro ?? 0) > 0;
+  const hasDos = (s.inv.dosimetro ?? 0) > 0 || perkMods(s).seeDose;
   return (
     <div class="surv-panel">
       <Bar label={T.surv.health} value={sv.health} />

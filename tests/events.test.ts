@@ -42,3 +42,44 @@ describe('Contenido de cartas', () => {
     expect(found).toBe(true);
   });
 });
+
+import { PERK_IDS } from '../src/data/perks';
+import { perkMods } from '../src/core/perks';
+describe('Perks', () => {
+  it('hay 30+ perks con nombre y descripción', () => {
+    expect(PERK_IDS.length).toBeGreaterThanOrEqual(30);
+    for (const id of PERK_IDS) expect(C.perks[id]?.name, id).toBeTruthy();
+  });
+  it('los modificadores se combinan', () => {
+    const s = newGame('PERK');
+    s.perks = ['racionador', 'metabolismo_lento'];
+    expect(perkMods(s).kcalSpendMult).toBeCloseTo(0.93 * 0.88, 5);
+    s.perks = ['optimista', 'insomne'];
+    expect(perkMods(s).moraleDailyAdd).toBeCloseTo(0.5, 5);
+  });
+});
+
+import { applyRun, emptyRecords, type RunSummary } from '../src/platform/records';
+describe('Récords', () => {
+  const run = (over: Partial<RunSummary>): RunSummary => ({ seed: 'X', mode: 'normal', threat: 'nuclear', days: 10, phase: 3, score: 300, cause: 'inanicion', date: '', doseMSv: 0, perks: 1, ...over });
+  it('guarda el mejor por amenaza y las causas', () => {
+    let r = emptyRecords();
+    r = applyRun(r, run({ score: 100 })).records;
+    const res = applyRun(r, run({ score: 400, cause: 'radiacion' }));
+    expect(res.newBest).toBe(true);
+    expect(res.records.best.nuclear.score).toBe(400);
+    expect(res.records.causes).toEqual({ inanicion: 1, radiacion: 1 });
+    expect(res.records.totalDays).toBe(20);
+  });
+  it('racha de semillas diarias', () => {
+    let r = emptyRecords();
+    r = applyRun(r, run({ mode: 'diaria', seed: 'DIA-20261112' })).records;
+    r = applyRun(r, run({ mode: 'diaria', seed: 'DIA-20261113' })).records;
+    expect(r.daily.streak).toBe(2);
+    r = applyRun(r, run({ mode: 'diaria', seed: 'DIA-20261113' })).records;
+    expect(r.daily.streak).toBe(2);
+    r = applyRun(r, run({ mode: 'diaria', seed: 'DIA-20261120' })).records;
+    expect(r.daily.streak).toBe(1);
+    expect(r.daily.bestStreak).toBe(2);
+  });
+});

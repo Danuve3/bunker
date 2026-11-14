@@ -318,6 +318,9 @@ export interface GameState {
   pendingEncounter: string | null;
   /** Cartas que se mostrarán después de la actual. */
   cardQueue: string[];
+  perks: string[];
+  /** Perks ofrecidos al terminar la fase (elegir 1). */
+  perkOffer: string[] | null;
 }
 
 export interface DayReport {

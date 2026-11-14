@@ -6,7 +6,8 @@ import { ALL_CARDS } from '../../data/cards';
 import { SOURCES } from '../../data/sources';
 import { phaseLength } from '../../data/threats';
 import { C, T, fmt, itemName, logText, moduleName, num } from '../../i18n';
-import { act, randomSeed, start, toMenu } from '../store';
+import { act, newBest, randomSeed, showToast, start, toMenu } from '../store';
+import { seedUrl, shareText } from '../../platform/share';
 
 export function CardModal({ s }: { s: GameState }) {
   if (!s.pending) return null;
@@ -75,13 +76,48 @@ export function PhaseEnd({ s }: { s: GameState }) {
             ))}
           </ul>
         )}
-        <p class="small muted">{T.phaseEnd.perksSoon}</p>
-        <button class="btn primary wide" onClick={() => act({ t: 'nextPhase' })}>
-          {fmt(T.phaseEnd.next, { n: s.phase + 1, d: phaseLength(s.phase + 1) })}
-        </button>
+        {s.perkOffer?.length ? (
+          <>
+            <p class="small">
+              {T.phaseEnd.pick} <span class="muted">({fmt(T.phaseEnd.next, { n: s.phase + 1, d: phaseLength(s.phase + 1) })})</span>
+            </p>
+            <div class="choices">
+              {s.perkOffer.map((id) => (
+                <button key={id} class="btn choice perk" onClick={() => act({ t: 'pickPerk', id })}>
+                  <b>{C.perks[id]?.name}</b>
+                  <span class="small">{C.perks[id]?.desc}</span>
+                </button>
+              ))}
+            </div>
+          </>
+        ) : (
+          <button class="btn primary wide" onClick={() => act({ t: 'nextPhase' })}>
+            {fmt(T.phaseEnd.next, { n: s.phase + 1, d: phaseLength(s.phase + 1) })}
+          </button>
+        )}
+        {s.perks.length > 0 && (
+          <p class="small muted">
+            {T.phaseEnd.yourPerks}: {s.perks.map((p) => C.perks[p]?.name).join(' · ')}
+          </p>
+        )}
       </article>
     </div>
   );
+}
+
+async function shareRun(s: GameState) {
+  const threat = s.threat.variant ? C.variants[s.threat.variant].name : C.threats[s.threat.primary].name;
+  const text = fmt(s.mode === 'diaria' ? T.share.daily : T.share.normal, {
+    days: s.day,
+    phase: s.phase,
+    threat,
+    score: score(s),
+    cause: C.causes[s.deathCause ?? 'heridas'],
+    seed: s.seed,
+  });
+  const r = await shareText('BÚNKER', text, seedUrl(s.seed));
+  if (r === 'copied') showToast(T.share.copied);
+  else if (r === 'failed') showToast(T.share.failed);
 }
 
 export function DeathScreen({ s }: { s: GameState }) {
@@ -92,6 +128,7 @@ export function DeathScreen({ s }: { s: GameState }) {
       <div class="death-inner">
         <p class="card-kind">{threat}</p>
         <h1>{T.death.title}</h1>
+        {newBest.value && <p class="badge">★ {T.death.newBest}</p>}
         <p class="cause">{C.causes[s.deathCause ?? 'heridas']}</p>
         <dl class="report">
           <dt>{T.death.days}</dt>
@@ -116,6 +153,9 @@ export function DeathScreen({ s }: { s: GameState }) {
             </li>
           ))}
         </ul>
+        <button class="btn wide" onClick={() => shareRun(s)}>
+          ↗ {T.death.share}
+        </button>
         <div class="row">
           <button class="btn ghost" onClick={toMenu}>
             {T.death.menu}

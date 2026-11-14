@@ -89,7 +89,7 @@ La lista completa con enlaces está en `src/data/sources.ts`. Los valores que so
 - [x] H2: construcción completa (almacén, 16 módulos, averías, sacos en casa o jardín) y clima en Canvas
 - [x] H3: expediciones al exterior (mapa procedural, exposición, botín con peso, 9 encuentros)
 - [x] H4: 76 eventos + 9 encuentros + 14 crisis finales (39 con «Dato real») y amenazas secundarias encadenadas
-- [ ] H5: perks, récords, semilla diaria y compartir
+- [x] H5: 34 perks (1 de 3), récords y estadísticas, racha del Búnker del día, compartir
 - [ ] H6: PWA completa (manifest, iconos, Service Worker offline, instalar)
 - [ ] H7: audio generativo y vibración
 - [ ] H8: tutorial guiado

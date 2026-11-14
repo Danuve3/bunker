@@ -156,6 +156,8 @@ export function newGame(seed: string, opts: NewGameOptions = {}): GameState {
     away: null,
     pendingEncounter: null,
     cardQueue: [],
+    perks: [],
+    perkOffer: null,
   };
   return s;
 }

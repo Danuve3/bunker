@@ -5,8 +5,9 @@ import { newGame, SAVE_VERSION } from '../core/state';
 import { dailySeed, seedFromEntropy } from '../core/rng';
 import type { GameMode, GameState } from '../core/types';
 import { load, remove, save } from '../platform/storage';
+import { emptyRecords, loadRecords, recordRun, type Records } from '../platform/records';
 
-export type Screen = 'menu' | 'game' | 'howto';
+export type Screen = 'menu' | 'game' | 'howto' | 'records';
 
 export const game = signal<GameState | null>(null);
 export const screen = signal<Screen>('menu');
@@ -18,15 +19,29 @@ export const showReport = signal(false);
 /** Celda seleccionada en la vista del búnker. */
 export const selectedCell = signal<{ c: number; r: number } | null>(null);
 
+export const records = signal<Records>(emptyRecords());
+/** La última partida terminada batió el récord de su amenaza. */
+export const newBest = signal(false);
+/** Mensaje breve en pantalla (toast). */
+export const toast = signal<string | null>(null);
+let toastTimer: ReturnType<typeof setTimeout> | undefined;
+export function showToast(msg: string) {
+  toast.value = msg;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => (toast.value = null), 2600);
+}
+
 const RUN_KEY = 'run';
 
 export async function boot() {
+  records.value = await loadRecords();
   const s = await load<GameState>(RUN_KEY);
   if (s && s.v === SAVE_VERSION && s.stage !== 'dead') savedRun.value = s;
   // ?seed=XXXX abre directamente una partida con esa semilla
   const seed = new URLSearchParams(location.search).get('seed');
   if (seed) {
-    start(seed.slice(0, 32), 'normal');
+    const clean = seed.slice(0, 32).toUpperCase();
+    start(clean, /^DIA-\d{8}$/.test(clean) ? 'diaria' : 'normal');
     history.replaceState(null, '', location.pathname);
   }
 }
@@ -44,6 +59,7 @@ export function start(seed: string, mode: GameMode) {
   savedRun.value = s;
   screen.value = 'game';
   showReport.value = false;
+  newBest.value = false;
   selectedCell.value = null;
   void save(RUN_KEY, s);
 }
@@ -62,8 +78,14 @@ export function act(a: Action) {
   const s = dispatch(s0, a);
   game.value = s;
   savedRun.value = s.stage === 'dead' ? null : s;
-  if (s.stage === 'dead') void remove(RUN_KEY);
-  else void save(RUN_KEY, s);
+  if (s.stage === 'dead') {
+    void remove(RUN_KEY);
+    if (s0.stage !== 'dead')
+      void recordRun(s).then((r) => {
+        records.value = r.records;
+        newBest.value = r.newBest;
+      });
+  } else void save(RUN_KEY, s);
   if ((a.t === 'advanceDay' || (a.t === 'choose' && s0.stage === 'boss')) && s.lastReport) showReport.value = true;
 }
 

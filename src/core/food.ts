@@ -1,6 +1,7 @@
 /** Despensa: comer, cocinar, caducidad. */
 import { GAS } from '../data/items';
 import { ITEMS } from '../data/items';
+import { perkMods } from './perks';
 import type { GameState } from './types';
 
 export const totalKcal = (s: GameState) => s.food.reduce((t, b) => t + b.kcal, 0);
@@ -32,7 +33,7 @@ export function eat(s: GameState, want: number): number {
     if (needsCook) {
       if (!cook) continue;
       const take = Math.min(b.kcal, need);
-      const gasNeed = take / GAS.kcalCookedPerCartridge;
+      const gasNeed = (take / GAS.kcalCookedPerCartridge) * perkMods(s).gasMult;
       const waterNeed = take * GAS.waterPerCookedKcal;
       if ((s.inv.gas ?? 0) < gasNeed || (s.inv.agua ?? 0) + (s.inv.aguaBruta ?? 0) < waterNeed) continue;
       s.inv.gas -= gasNeed;

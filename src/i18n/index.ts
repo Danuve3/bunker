@@ -65,6 +65,7 @@ function localizeParams(p?: Record<string, string | number>): Record<string, str
   if (typeof p.shop === 'string') out.shop = C.shops[p.shop]?.name ?? p.shop;
   if (typeof p.method === 'string') out.method = C.methods[p.method] ?? p.method;
   if (typeof p.place === 'string') out.place = placeName(p.place);
+  if (typeof p.perk === 'string') out.perk = C.perks[p.perk]?.name ?? p.perk;
   if (typeof p.loot === 'string') out.loot = lootText(p.loot);
   return out;
 }

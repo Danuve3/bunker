@@ -21,6 +21,7 @@ import { eat } from './food';
 import { exposureFactor } from './expedition';
 import { EXPEDITION, LOCATIONS, type LocType } from '../data/locations';
 import { clamp, log } from './log';
+import { perkMods } from './perks';
 import type { Rng } from './rng';
 import type { DayActivity, DayReport, DeathCause, GameState, InfectionKind } from './types';
 
@@ -131,13 +132,13 @@ function powerStep(s: GameState, act: HourAct, r: DayReport): PowerResult {
       const nBat = working(b, 'baterias').length;
       const chargeW = cap > 0 ? Math.min((cap - s.batteryWh) / POWER.chargeEfficiency, 400 * nBat) : 0;
       genW = Math.min(POWER.generatorW, loadW + chargeW);
-      const fuel = Math.min(s.inv.diesel, POWER.dieselIdleLPerH + (genW / 1000) * POWER.dieselLPerKWh);
+      const fuel = Math.min(s.inv.diesel, (POWER.dieselIdleLPerH + (genW / 1000) * POWER.dieselLPerKWh) * perkMods(s).fuelMult);
       s.inv.diesel -= fuel;
       r.fuelUsedL += fuel;
       s.batteryWh = Math.min(cap, s.batteryWh + chargeW * POWER.chargeEfficiency);
       const genRow = Math.min(...working(b, 'generador').map((m) => m.r));
-      s.noise24 += POWER.generatorNoisePerH * GEN_NOISE_BY_ROW[Math.min(genRow, GEN_NOISE_BY_ROW.length - 1)];
-      for (const m of working(b, 'generador')) m.condition -= MODULES.generador.wearPerDay / 24;
+      s.noise24 += POWER.generatorNoisePerH * GEN_NOISE_BY_ROW[Math.min(genRow, GEN_NOISE_BY_ROW.length - 1)] * perkMods(s).noiseMult;
+      for (const m of working(b, 'generador')) m.condition -= (MODULES.generador.wearPerDay / 24) * perkMods(s).genWearMult;
       powered = true;
     } else if (s.batteryWh >= loadW) {
       s.batteryWh -= loadW;
@@ -160,6 +161,7 @@ export function simulateHour(s: GameState, rng: Rng, act0: HourAct, r: DayReport
   if (s.stage === 'dead') return;
   const b = s.bunker;
   const sv = s.survivor;
+  const pm = perkMods(s);
   let act = act0;
   if (sv.fatigue >= FATIGUE.collapseAt && act !== 'dormir') act = 'dormir';
   const int = intensityOf(act, s);
@@ -186,7 +188,7 @@ export function simulateHour(s: GameState, rng: Rng, act0: HourAct, r: DayReport
       s.inv.filtroHoras -= 1;
     }
   }
-  const manualQ = act === 'ventilar' ? AIR.manualM3h : 0;
+  const manualQ = act === 'ventilar' ? AIR.manualM3h * pm.manualVentMult : 0;
   const Q = leakQ + fanQ + manualQ;
   const unfilteredQ = leakQ + manualQ + (filtered ? 0 : fanQ);
   const genM3h = s.away ? 0 : AIR.co2KgPerDay / 24 / AIR.co2DensityKgM3;
@@ -225,7 +227,7 @@ export function simulateHour(s: GameState, rng: Rng, act0: HourAct, r: DayReport
   let infWater = infData ? infData.waterLossLPerH * (sv.infection!.severity / 50) : 0;
   if (infWater > 0 && sv.infection!.kind === 'gastro' && (s.inv.sroActivo ?? 0) > 0) infWater *= 0.35;
   const need =
-    WATER.drinkNeedLPerDay / 24 +
+    (WATER.drinkNeedLPerDay / 24) * pm.waterNeedMult +
     (int === 'pesado' ? WATER.extraPerHeavyHourL : 0) +
     (Math.max(0, tIn - 26) * WATER.extraPerHotDegreeL) / 24 +
     infWater;
@@ -254,7 +256,7 @@ export function simulateHour(s: GameState, rng: Rng, act0: HourAct, r: DayReport
   const letrina = has(b, 'letrina');
   const kit = (s.inv.higiene ?? 0) > 0;
   if (hygWant > 0 && hygGot >= hygWant * 0.9) sv.hygiene = Math.min(100, sv.hygiene + (kit ? 2 : 1.2));
-  else sv.hygiene -= (WATER.hygieneDrainPerDay / 24) * (letrina ? MODULES.letrina.hygieneDrainMult! : 1) * (kit ? 0.6 : 1);
+  else sv.hygiene -= (WATER.hygieneDrainPerDay / 24) * (letrina ? MODULES.letrina.hygieneDrainMult! : 1) * (kit ? 0.6 : 1) * pm.hygieneDrainMult;
   if (modActive(s, 'flood')) sv.hygiene -= 0.6;
   sv.hygiene = clamp(sv.hygiene, 0, 100);
   if (kit) s.inv.higiene = Math.max(0, s.inv.higiene - 1 / (CONSUMPTION.higieneKitDays * 24));
@@ -264,7 +266,8 @@ export function simulateHour(s: GameState, rng: Rng, act0: HourAct, r: DayReport
     ((s.inv.ropa_termica ?? 0) > 0 ? THERMO.gear.ropa_termica : 0) +
     ((s.inv.mantas ?? 0) > 0 ? THERMO.gear.mantas : 0) +
     (sleeping && (s.inv.saco_dormir ?? 0) > 0 ? THERMO.gear.saco_dormir : 0) +
-    modValue(s, 'huddle');
+    modValue(s, 'huddle') +
+    pm.coldComfortAdd;
   const comfort = THERMO.comfortBaseC - insul - THERMO.workHeatC[int];
   const stress = Math.max(0, comfort - tIn);
   const fedOk = sv.kcalBalance > ENERGY.deficitWeakKcal;
@@ -276,7 +279,7 @@ export function simulateHour(s: GameState, rng: Rng, act0: HourAct, r: DayReport
   } else sv.coreTempC = Math.min(THERMO.normalC, sv.coreTempC + THERMO.rewarmPerH);
 
   // ── Comida ──
-  const spent = ENERGY.kcalPerHour[int] + compensated * ENERGY.shiverKcalPerDegreeHour;
+  const spent = (ENERGY.kcalPerHour[int] + compensated * ENERGY.shiverKcalPerDegreeHour) * pm.kcalSpendMult;
   let eaten = 0;
   if (MEAL_HOURS.includes(clockHour(s)) && !sleeping) {
     eaten = eat(s, ENERGY.rations[s.plan.food] / 3);
@@ -291,11 +294,12 @@ export function simulateHour(s: GameState, rng: Rng, act0: HourAct, r: DayReport
     if (stress > 2) q *= 0.7;
     if (b.co2ppm > AIR.pelPpm) q *= 0.85;
     if (sv.morale < MORALE.insomniaBelow) q *= 0.75;
-    sv.fatigue += FATIGUE.perHour.dormir * q;
+    sv.fatigue += FATIGUE.perHour.dormir * q * pm.sleepMult;
   } else {
     let gain = act === 'guardia' ? FATIGUE.guardPerHour : FATIGUE.perHour[int];
     if (gain > 0 && infData) gain *= infData.fatigueMult;
     if (gain > 0 && b.co2ppm > 15000) gain *= 1.3;
+    if (gain > 0) gain *= pm.fatigueGainMult;
     sv.fatigue += gain;
   }
   sv.fatigue = clamp(sv.fatigue, 0, 100);
@@ -304,16 +308,18 @@ export function simulateHour(s: GameState, rng: Rng, act0: HourAct, r: DayReport
   if (awayLoc) {
     let p = outdoorInfection(s) * LOCATIONS[awayLoc.type as LocType].infectionMult;
     if (s.away!.masked) p *= EXPEDITION.maskInfectionMult;
+    p *= pm.infectionMult;
     if (rng.chance(p) && infect(s, rng, 'pandemia')) log(s, 'log.contagio', undefined, 'warn');
   }
   const insideP = awayLoc ? 0 : modValue(s, 'infection');
   if (insideP > 0) {
     let p = insideP * (Q > 0 ? unfilteredQ / Q : 1);
     if (modActive(s, 'masks')) p *= 0.06; // FFP2 ≥94 % (niosh_n95)
+    p *= pm.infectionMult;
     if (rng.chance(p) && infect(s, rng, 'pandemia')) log(s, 'log.contagio', undefined, 'warn');
   }
   if (sv.hygiene < 40 && !sv.infection) {
-    const p = 0.0015 * (letrina ? MODULES.letrina.gastroRiskMult! : 1) * (modActive(s, 'flood') ? 3 : 1);
+    const p = 0.0015 * (letrina ? MODULES.letrina.gastroRiskMult! : 1) * (modActive(s, 'flood') ? 3 : 1) * pm.gastroMult;
     if (rng.chance(p)) infect(s, rng, 'gastro');
   }
   if (sv.injuries > 20 && sv.hygiene < 50 && !sv.infection && rng.chance(0.002)) infect(s, rng, 'herida');

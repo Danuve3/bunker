@@ -15,7 +15,7 @@ function play(seed: string): string {
   for (let i = 0; i < 40 && s.stage !== 'dead'; i++) {
     if (s.stage === 'crisis') s = dispatch(s, { t: 'advanceDay' });
     else if (s.stage === 'event' || s.stage === 'boss') s = dispatch(s, { t: 'choose', choice: lastChoice(s) });
-    else if (s.stage === 'phaseEnd') s = dispatch(s, { t: 'nextPhase' });
+    else if (s.stage === 'phaseEnd') s = dispatch(s, { t: 'pickPerk', id: s.perkOffer![0] });
   }
   return JSON.stringify(s);
 }

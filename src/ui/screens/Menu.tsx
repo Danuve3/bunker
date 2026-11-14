@@ -50,9 +50,14 @@ export function Menu() {
         <button class="btn ghost wide" onClick={() => setSeedOpen(true)}>
           {T.menu.customSeed}
         </button>
-        <button class="btn ghost wide" onClick={() => (screen.value = 'howto')}>
-          {T.menu.howTo}
-        </button>
+        <div class="row">
+          <button class="btn ghost" onClick={() => (screen.value = 'records')}>
+            {T.menu.records}
+          </button>
+          <button class="btn ghost" onClick={() => (screen.value = 'howto')}>
+            {T.menu.howTo}
+          </button>
+        </div>
       </div>
       {confirm && (
         <Sheet
