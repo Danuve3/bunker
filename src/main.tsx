@@ -1,13 +1,6 @@
 import { render } from 'preact';
+import { App } from './ui/App';
+import { boot } from './ui/store';
 import './ui/theme.css';
 
-function Hello() {
-  return (
-    <main class="boot">
-      <h1>BÚNKER</h1>
-      <p>Preparando el refugio…</p>
-    </main>
-  );
-}
-
-render(<Hello />, document.getElementById('app')!);
+void boot().then(() => render(<App />, document.getElementById('app')!));
