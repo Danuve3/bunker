@@ -40,6 +40,12 @@ function finishFranja(s: GameState, act: DayActivity) {
   const eff = efficiency(s);
   const b = s.bunker;
   switch (act) {
+    // Acción simplificada: obra si hay; si no, mantenimiento y potabilización automáticos.
+    case 'trabajar':
+      if (b.project) return finishFranja(s, 'construir');
+      finishFranja(s, 'mantener');
+      if ((s.inv.aguaBruta ?? 0) > 5 && canPotabilize(s)) finishFranja(s, 'potabilizar');
+      return;
     case 'mantener': {
       const broken = b.modules.find((m) => m.broken);
       if (broken && (s.inv.madera ?? 0) >= MAINTENANCE.repairCost.madera) {
@@ -67,6 +73,11 @@ function finishFranja(s: GameState, act: DayActivity) {
       for (const o of working(b, 'ocio')) m += MORALE.ocioModuleBonus * o.condition;
       if ((s.inv.libros_juegos ?? 0) > 0) m += MORALE.booksBonus;
       m *= pm.ocioMult;
+      // Con radio, el ocio incluye escuchar las noticias
+      if ((s.inv.radio_dinamo ?? 0) > 0 || has(b, 'radio')) {
+        m += MORALE.radioFranja / 2 + (has(b, 'radio') ? 2 : 0) + pm.radioMoraleAdd;
+        log(s, `log.radio.${s.threat.primary}${(s.day % 3) + 1}`);
+      }
       sv.morale = clamp(sv.morale + m, 0, 100);
       break;
     }
@@ -140,7 +151,11 @@ function finishFranja(s: GameState, act: DayActivity) {
     case 'ventilar':
       break;
   }
-  if (s.inv.sroActivo) s.inv.sroActivo = Math.max(0, s.inv.sroActivo - 6);
+}
+
+function canPotabilize(s: GameState) {
+  const b = s.bunker;
+  return (s.inv.filtro_agua ?? 0) > 0 || has(b, 'purificador') || (s.inv.lejia_ml ?? 0) >= 1 || ((s.inv.hornillo ?? 0) > 0 && (s.inv.gas ?? 0) > 0.1);
 }
 
 /** Simula las 24 h del plan actual (07:00 → 07:00). */
@@ -161,6 +176,7 @@ export function runDay(s: GameState, rng: Rng, bossDay = false) {
     hours(s, rng, 6, a);
     if (s.stage === 'dead') return;
     finishFranja(s, a);
+    if (s.inv.sroActivo) s.inv.sroActivo = Math.max(0, s.inv.sroActivo - 6);
   }
   // Las expediciones no se repiten solas: hay que planificarlas cada día.
   for (const slot of ['morning', 'afternoon'] as const) if (p[slot] === 'expedicion') p[slot] = 'descansar';

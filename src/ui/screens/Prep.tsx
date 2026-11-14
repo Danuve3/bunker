@@ -6,26 +6,28 @@ import { available, checkBuy, hoursLeft, price, projectHoursEstimate, tankRoom, 
 import { storageInfo } from '../../core/bunker';
 import { excavatorActive } from '../../core/projects';
 import type { GameState } from '../../core/types';
-import { ITEMS, SHOPS, type ShopId } from '../../data/items';
+import { ITEMS, RECOMMENDED, SHOPS, type ShopId } from '../../data/items';
 import { C, T, fmt, itemName, moduleName, num } from '../../i18n';
-import { BunkerView } from '../bunker/BunkerView';
+import { BunkerView } from '../bunker/BunkerCanvas';
 import { Sheet, Stepper } from '../components/ui';
 import { act, selectedCell, sheet } from '../store';
 import { CellSheet } from './CellSheet';
+import { PixelIcon } from '../components/PixelIcon';
 import { TopBar } from './TopBar';
 
-const SHOP_ORDER: ShopId[] = ['super', 'ferreteria', 'farmacia', 'gasolinera', 'outdoor', 'online', 'alquiler'];
+const SHOP_ORDER: ShopId[] = ['super', 'ferreteria', 'farmacia', 'outdoor', 'gasolinera', 'online', 'alquiler'];
 
 function ShopSheet({ s, shop }: { s: GameState; shop: ShopId }) {
   const [cart, setCart] = useState<Record<string, number>>({});
-  const ids = Object.keys(ITEMS).filter((id) => ITEMS[id].shop === shop);
+  const ids = Object.keys(ITEMS).filter((id) => ITEMS[id].shop === shop && !ITEMS[id].hidden);
+  const lot = RECOMMENDED[shop];
   const chk = checkBuy(s, shop, cart);
   const total = Object.entries(cart).reduce((t, [id, q]) => t + price(s, id) * q, 0);
   const hrs = tripHours(shop, cart);
   const close = () => (sheet.value = null);
   return (
     <Sheet
-      title={`${C.shops[shop].icon} ${C.shops[shop].name}`}
+      title={C.shops[shop].name}
       onClose={close}
       footer={
         <div class="cart-foot">
@@ -47,6 +49,15 @@ function ShopSheet({ s, shop }: { s: GameState; shop: ShopId }) {
       }
     >
       <StorageBar s={s} />
+      {lot && (
+        <button
+          class="btn wide"
+          onClick={() => setCart(Object.fromEntries(Object.entries(lot).map(([id, q]) => [id, Math.min(q, available(s, id))])))}
+        >
+          {T.prep.lot}
+          <span class="small muted">{T.prep.lotDesc}</span>
+        </button>
+      )}
       {shop === 'online' && <p class="small tone-warn">{T.prep.online}</p>}
       {shop === 'alquiler' && <p class="small">{T.prep.excavator}</p>}
       <ul class="shop-list">
@@ -145,8 +156,8 @@ export function PrepScreen({ s }: { s: GameState }) {
             <div class="shop-grid">
               {SHOP_ORDER.map((id) => (
                 <button key={id} class="shop-btn" onClick={() => (sheet.value = `shop:${id}`)}>
-                  <span class="shop-icon" aria-hidden="true">
-                    {C.shops[id].icon}
+                  <span class="shop-icon">
+                    <PixelIcon name={id} size={40} />
                   </span>
                   <span>{C.shops[id].name}</span>
                   <span class="small muted">{num(SHOPS[id].tripH, 2)} h</span>
@@ -194,9 +205,9 @@ export function PrepScreen({ s }: { s: GameState }) {
         {tab === 'home' && (
           <>
             <ul class="actions">
-              {(['banera', 'bidones', 'deposito', 'dormir', 'descansar'] as const).map((id) => {
+              {(['banera', 'deposito', 'dormir', 'descansar'] as const).map((id) => {
                 if (id === 'deposito' && storageInfo(s).waterExtra <= 0) return null;
-                const disabled = (id === 'banera' && !!s.inv.banera) || (id === 'bidones' && !(s.inv.bidon_25 > 0)) || (id === 'deposito' && tankRoom(s) < 1);
+                const disabled = (id === 'banera' && !!s.inv.banera) || (id === 'deposito' && tankRoom(s) < 1);
                 return (
                   <li key={id}>
                     <button class="btn wide" disabled={disabled} onClick={() => act({ t: 'prep', id })}>

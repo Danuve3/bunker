@@ -57,6 +57,7 @@ function intensityOf(act: HourAct, s: GameState): Intensity {
     const c = clockHour(s);
     return c >= 23 || c < 7 ? 'dormir' : 'reposo';
   }
+  if (act === 'trabajar') return s.bunker.project ? 'pesado' : 'ligero';
   return ACTIVITY_INTENSITY[act];
 }
 

@@ -4,11 +4,12 @@ import { encounterChance, estimateDose, estimateInfection, lootCategories, searc
 import type { DayPlan, GameState, LootFocus } from '../../core/types';
 import { C, T, fmt, num, placeName } from '../../i18n';
 import { Seg, Sheet } from '../components/ui';
+import { PixelCanvas } from '../components/PixelCanvas';
+import { MAP, MapRenderer, locPosIn } from '../pixel/map';
 import { act, sheet } from '../store';
+import { PixelIcon } from '../components/PixelIcon';
 
-const R = 140; // radio del mapa (px de viewBox) para 3 km
-/** Escala radial con raíz cuadrada: separa los lugares cercanos. */
-const rad = (km: number) => Math.sqrt(km / 3) * R;
+const mapR = new MapRenderer();
 
 export function MapSheet({ s, slot }: { s: GameState; slot: 'morning' | 'afternoon' }) {
   const [sel, setSel] = useState<string | null>(s.plan.exp?.[slot]?.loc ?? s.map[0]?.id ?? null);
@@ -35,49 +36,27 @@ export function MapSheet({ s, slot }: { s: GameState; slot: 'morning' | 'afterno
         </button>
       }
     >
-      <svg class="map" viewBox={`${-R - 14} ${-R - 14} ${2 * R + 28} ${2 * R + 28}`} role="group" aria-label="Mapa de los alrededores">
-        <rect x={-R - 14} y={-R - 14} width={2 * R + 28} height={2 * R + 28} fill="#1b1712" />
-        {[1, 2, 3].map((k) => (
-          <g key={k}>
-            <circle r={rad(k)} fill="none" stroke="#3e3429" stroke-dasharray="4 4" />
-            <text x={rad(k) - 4} y="-3" text-anchor="end" class="map-ring">
-              {k} km
-            </text>
-          </g>
-        ))}
-        <path d={`M${-R} ${R * 0.3} Q0 ${R * 0.1} ${R} ${-R * 0.2}`} stroke="#2c3c46" stroke-width="10" fill="none" opacity="0.6" />
-        <rect x="-9" y="-9" width="18" height="18" rx="3" fill="#f2a93b" />
-        <text y="26" text-anchor="middle" class="map-label">
-          {T.map.home}
-        </text>
+      <div class="map-wrap">
+        <PixelCanvas w={MAP} h={MAP} class="map" label="Mapa de los alrededores" draw={(cv, t) => mapR.render(cv, s, sel, t)} deps={[s, sel]} />
         {s.map.map((l) => {
-          const x = Math.cos(l.angle) * rad(l.distKm);
-          const y = Math.sin(l.angle) * rad(l.distKm);
-          const on = l.id === sel;
+          const p = locPosIn(s.map, l);
           return (
-            <g
+            <button
               key={l.id}
-              transform={`translate(${x} ${y})`}
-              onClick={() => setSel(l.id)}
-              onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), setSel(l.id))}
-              class="map-pin"
-              role="button"
-              {...{ tabindex: 0 }}
-              aria-pressed={on}
+              class={`map-hit ${l.id === sel ? 'on' : ''}`}
+              style={{ left: `${(p.x / MAP) * 100}%`, top: `${(p.y / MAP) * 100}%` }}
+              aria-pressed={l.id === sel}
               aria-label={`${placeName(l.id, l.variant)}, ${num(l.distKm, 1)} km`}
-            >
-              <circle r="22" fill="transparent" />
-              <circle r={on ? 15 : 12} fill={on ? '#f2a93b' : l.looted > 0.85 ? '#3a332b' : '#2a231c'} stroke={on ? '#fff' : '#8a7a66'} stroke-width="2" />
-              <text y="5" text-anchor="middle" font-size="13">
-                {C.places[l.type]?.icon}
-              </text>
-            </g>
+              onClick={() => setSel(l.id)}
+            />
           );
         })}
-      </svg>
+      </div>
       {loc && (
         <div class="loc-info">
-          <h3>{placeName(loc.id, loc.variant)}</h3>
+          <h3 class="loc-title">
+            <PixelIcon name={loc.type} size={24} /> {placeName(loc.id, loc.variant)}
+          </h3>
           <p class="small">{fmt(T.map.dist, { d: num(loc.distKm, 1), t: num(travelHours(loc, s), 1), s: num(searchHours(loc, s), 1) })}</p>
           <p class="small">
             {T.map.loot}: {lootCategories(loc.type).map((c) => C.focus[c]).join(' · ')} — <b>{T.map.looted[lootedLv(loc.looted)]}</b>
@@ -100,7 +79,7 @@ export function MapSheet({ s, slot }: { s: GameState; slot: 'morning' | 'afterno
           {s.threat.infectionPressure > 0.005 && (s.inv.ffp2 ?? 0) > 0 && <p class="small tone-good">{fmt(T.map.mask, { n: s.inv.ffp2 })}</p>}
           <label class="field">
             <span>{T.map.focus}</span>
-            <Seg label={T.map.focus} value={focus} onChange={setFocus} options={(['comida', 'agua', 'medicina', 'materiales', 'combustible'] as const).map((v) => ({ v, label: C.focus[v] }))} />
+            <Seg label={T.map.focus} value={focus} onChange={setFocus} options={(['comida', 'agua', 'medicina', 'materiales'] as const).map((v) => ({ v, label: C.focus[v] }))} />
           </label>
           <p class="small muted">{T.map.carry}</p>
         </div>

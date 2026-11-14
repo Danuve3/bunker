@@ -60,10 +60,10 @@ export const LOCATIONS: Record<LocType, LocData> = {
   gasolinera: {
     distKm: [0.5, 2.5], count: [1, 1], encounter: 0.35, infectionMult: 1, buildingPF: 2, injury: 0.05,
     loot: [
-      { id: 'diesel', min: 5, max: 20, p: 0.55, cat: 'combustible' },
+      { id: 'diesel', min: 5, max: 20, p: 0.55, cat: 'materiales' },
       { id: 'food', min: 1000, max: 4000, p: 0.6, cat: 'comida', food: 'galletas' },
       { id: 'agua', min: 4, max: 12, p: 0.5, cat: 'agua' },
-      { id: 'gas', min: 1, max: 4, p: 0.3, cat: 'combustible' },
+      { id: 'gas', min: 1, max: 4, p: 0.3, cat: 'materiales' },
     ],
   },
   ferreteria: {
@@ -95,7 +95,7 @@ export const LOCATIONS: Record<LocType, LocData> = {
       { id: 'agua', min: 4, max: 16, p: 0.5, cat: 'agua' },
       { id: 'aguaBruta', min: 20, max: 80, p: 0.5, cat: 'agua' },
       { id: 'mantas', min: 1, max: 1, p: 0.4, cat: 'materiales' },
-      { id: 'gas', min: 1, max: 2, p: 0.3, cat: 'combustible' },
+      { id: 'gas', min: 1, max: 2, p: 0.3, cat: 'materiales' },
       { id: 'madera', min: 1, max: 4, p: 0.4, cat: 'materiales' },
       { id: 'libros_juegos', min: 1, max: 1, p: 0.2, cat: 'materiales' },
     ],

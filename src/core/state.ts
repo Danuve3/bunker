@@ -9,7 +9,7 @@ import type { Bunker, CellKind, DayPlan, GameMode, GameState, ThreatId, ThreatSt
 export const SAVE_VERSION = 2;
 
 export const DEFAULT_PLAN: DayPlan = {
-  morning: 'mantener',
+  morning: 'trabajar',
   afternoon: 'ocio',
   night: 'dormir',
   food: 'completa',

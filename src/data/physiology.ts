@@ -56,6 +56,7 @@ export const ENERGY = {
 /** Intensidad física de cada actividad diurna. */
 export const ACTIVITY_INTENSITY: Record<DayActivity, keyof typeof ENERGY.kcalPerHour> = {
   expedicion: 'pesado', // caminar con carga y registrar edificios
+  trabajar: 'ligero', // si hay obra en marcha pasa a 'pesado' (ver sim.ts)
   descansar: 'reposo',
   mantener: 'ligero',
   ventilar: 'pesado', // bomba de aire manual (Kearny Air Pump), esfuerzo sostenido

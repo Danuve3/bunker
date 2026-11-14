@@ -162,6 +162,7 @@ export interface ThreatState {
 
 export type DayActivity =
   | 'expedicion'
+  | 'trabajar'
   | 'descansar'
   | 'mantener'
   | 'ventilar'

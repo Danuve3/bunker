@@ -149,10 +149,10 @@ function dailyPlan(s: GameState, bot: BotId): Action {
   const smart = bot !== 'pasivo';
   const care: DayActivity | null = sv.infection?.stage === 'activa' || sv.injuries > 15 ? 'curar' : null;
   const air: DayActivity | null = smart && s.bunker.co2ppm > 4000 && !has(s.bunker, 'ventilacion') ? 'ventilar' : null;
-  const water: DayActivity | null = smart && (s.inv.aguaBruta ?? 0) > 10 && daysWater < 10 ? 'potabilizar' : null;
-  const work: DayActivity | null = smart && s.bunker.project ? 'construir' : null;
-  const morning: DayActivity = exp ? 'expedicion' : care ?? air ?? water ?? work ?? (smart ? 'mantener' : 'descansar');
-  const afternoon: DayActivity = sv.fatigue > 65 ? 'descansar' : sv.morale < 45 ? 'ocio' : air ?? (smart && (s.inv.radio_dinamo ?? 0) > 0 ? 'radio' : 'ocio');
+  // Solo las acciones que ofrece la interfaz simplificada
+  const morning: DayActivity = exp ? 'expedicion' : care ?? air ?? (smart ? 'trabajar' : 'descansar');
+  const afternoon: DayActivity = sv.fatigue > 65 ? 'descansar' : sv.morale < 45 ? 'ocio' : air ?? (smart && s.bunker.project ? 'trabajar' : 'ocio');
+  void daysWater;
   // Racionar solo cuando de verdad escasea
   const food = !smart ? 'completa' : daysFood < 3 ? 'minima' : daysFood < 7 && !exp ? 'reducida' : 'completa';
   const waterR = !smart ? 'normal' : daysWater < 3 ? 'minima' : daysWater < 6 ? 'reducida' : 'normal';

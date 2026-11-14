@@ -41,6 +41,8 @@ export default defineConfig({
   plugins: [preact(), serviceWorker()],
   define: { __APP_VERSION__: JSON.stringify(process.env.npm_package_version ?? 'dev') },
   server: { fs: { allow: ['..'] } },
+  resolve: { dedupe: ['preact', '@preact/signals'] },
+  optimizeDeps: { entries: ['index.html', 'lab.html'], include: ['preact', 'preact/hooks', 'preact/jsx-runtime', '@preact/signals'] },
   build: {
     outDir: '..',
     emptyOutDir: false, // ¡la raíz es el repositorio! scripts/clean-build.mjs borra solo lo generado

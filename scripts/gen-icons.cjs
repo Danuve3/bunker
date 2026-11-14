@@ -41,27 +41,62 @@ function iconSvg({ rounded }) {
 
 function splashHtml(w, h) {
   const icon = Math.round(Math.min(w, h) * 0.32);
-  return `<html><body style="margin:0;width:${w}px;height:${h}px;background:#15120e;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:${Math.round(icon * 0.12)}px;font-family:'Arial Black',Impact,sans-serif">
-  <div style="width:${icon}px;height:${icon}px">${iconSvg({ rounded: true })}</div>
+  return `<html><body style="margin:0;width:${w}px;height:${h}px;background:#15120e;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:${Math.round(icon * 0.12)}px;font-family:'Courier New',monospace;font-weight:900">
+  <img src="ICON512" style="width:${icon}px;height:${icon}px;image-rendering:pixelated;border-radius:${Math.round(icon * 0.2)}px" />
   <div style="color:#f2a93b;font-size:${Math.round(icon * 0.28)}px;letter-spacing:0.22em;padding-left:0.22em">BÚNKER</div>
   </body></html>`;
 }
 
 (async () => {
+  // El icono se dibuja con el mismo motor pixel art del juego (src/ui/pixel/appicon.ts).
+  const esbuild = require('esbuild');
+  const bundle = esbuild.buildSync({
+    stdin: { contents: "import { drawAppIcon } from './src/ui/pixel/appicon'; window.drawAppIcon = drawAppIcon;", resolveDir: path.join(__dirname, '..'), loader: 'ts' },
+    bundle: true,
+    write: false,
+    format: 'iife',
+  }).outputFiles[0].text;
   const browser = await chromium.launch();
   const page = await browser.newPage();
+  const pixelIcon = async (size, file, rounded) => {
+    await page.setViewportSize({ width: size, height: size });
+    await page.setContent('<html><body style="margin:0;background:transparent"><canvas id="c" width="32" height="32"></canvas></body></html>');
+    await page.addScriptTag({ content: bundle });
+    const url = await page.evaluate(({ size, rounded }) => {
+      const src = document.getElementById('c');
+      window.drawAppIcon(src.getContext('2d'));
+      const out = document.createElement('canvas');
+      out.width = size;
+      out.height = size;
+      const c = out.getContext('2d');
+      c.imageSmoothingEnabled = false;
+      if (rounded) {
+        const r = size * 0.2;
+        c.beginPath();
+        c.roundRect(0, 0, size, size, r);
+        c.clip();
+      }
+      c.drawImage(src, 0, 0, size, size);
+      return out.toDataURL('image/png');
+    }, { size, rounded });
+    fs.writeFileSync(path.join(OUT, file), Buffer.from(url.split(',')[1], 'base64'));
+  };
   async function render(html, w, h, file) {
     await page.setViewportSize({ width: w, height: h });
     await page.setContent(html);
     await page.screenshot({ path: path.join(OUT, file), omitBackground: true });
   }
   const svgPage = (svg, size) => `<html><body style="margin:0;background:transparent">${svg.replace('<svg ', `<svg width="${size}" height="${size}" `)}</body></html>`;
-  await render(svgPage(iconSvg({ rounded: true }), 192), 192, 192, 'icon-192.png');
-  await render(svgPage(iconSvg({ rounded: true }), 512), 512, 512, 'icon-512.png');
-  await render(svgPage(iconSvg({ rounded: false }), 512), 512, 512, 'icon-maskable-512.png');
-  await render(svgPage(iconSvg({ rounded: false }), 192), 192, 192, 'icon-maskable-192.png');
-  await render(svgPage(iconSvg({ rounded: false }), 180), 180, 180, 'apple-touch-icon.png');
-  fs.writeFileSync(path.join(OUT, 'favicon.svg'), iconSvg({ rounded: true }));
+  await pixelIcon(192, 'icon-192.png', true);
+  await pixelIcon(512, 'icon-512.png', true);
+  await pixelIcon(512, 'icon-maskable-512.png', false);
+  await pixelIcon(192, 'icon-maskable-192.png', false);
+  await pixelIcon(180, 'apple-touch-icon.png', false);
+  await pixelIcon(64, 'favicon-64.png', true);
+  // favicon SVG: el mismo icono incrustado como PNG nítido
+  const fav = fs.readFileSync(path.join(OUT, 'favicon-64.png')).toString('base64');
+  fs.writeFileSync(path.join(OUT, 'favicon.svg'), `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><image href="data:image/png;base64,${fav}" width="64" height="64" style="image-rendering:pixelated"/></svg>`);
+  fs.unlinkSync(path.join(OUT, 'favicon-64.png'));
   // Pantallas de inicio iOS (portrait): [ancho CSS, alto CSS, ratio]
   const SPLASH = [
     [375, 667, 2], [414, 896, 2], [375, 812, 3], [390, 844, 3], [393, 852, 3], [414, 896, 3], [428, 926, 3], [430, 932, 3], [744, 1133, 2], [820, 1180, 2], [1024, 1366, 2],
@@ -69,7 +104,8 @@ function splashHtml(w, h) {
   const links = [];
   for (const [w, h, r] of SPLASH) {
     const file = `splash-${w * r}x${h * r}.png`;
-    await render(splashHtml(w * r, h * r), w * r, h * r, file);
+    const icon512 = 'data:image/png;base64,' + fs.readFileSync(path.join(OUT, 'icon-512.png')).toString('base64');
+    await render(splashHtml(w * r, h * r).replace('ICON512', icon512), w * r, h * r, file);
     links.push(`    <link rel="apple-touch-startup-image" href="icons/${file}" media="(device-width: ${w}px) and (device-height: ${h}px) and (-webkit-device-pixel-ratio: ${r}) and (orientation: portrait)" />`);
   }
   console.log('Enlaces para index.html:\n' + links.join('\n'));

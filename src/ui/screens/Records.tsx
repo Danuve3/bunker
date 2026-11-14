@@ -63,7 +63,7 @@ export function RecordsScreen() {
               {r.history.slice(0, 10).map((run, i) => (
                 <li key={i}>
                   <span>
-                    {threatName(run.threat)} {run.mode === 'diaria' ? '📅' : ''}
+                    {threatName(run.threat)} {run.mode === 'diaria' ? '· diaria' : ''}
                     <span class="small muted"> · {run.seed}</span>
                   </span>
                   <b class="num">{fmt(T.records.days, { d: run.days, p: run.phase, s: run.score })}</b>

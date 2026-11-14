@@ -5,9 +5,15 @@ import { dailySeed } from '../../core/rng';
 import type { GameState } from '../../core/types';
 import { C, T, num } from '../../i18n';
 import { Sheet } from '../components/ui';
+import { PixelIcon } from '../components/PixelIcon';
+import { BunkerView } from '../bunker/BunkerCanvas';
+import { titleState } from '../pixel/demo';
+import { Banner } from './Overlays';
 import { act, records, randomSeed, resume, savedRun, screen, start, startDaily, startTutorial } from '../store';
 import { settings } from '../settings';
 import { canInstall, isIOS, isStandalone, promptInstall } from '../../pwa/register';
+
+const title = titleState();
 
 export function Menu() {
   const [confirm, setConfirm] = useState<null | (() => void)>(null);
@@ -18,22 +24,13 @@ export function Menu() {
   const today = dailySeed(new Date());
   return (
     <div role="main" class="screen menu">
-      <div class="menu-art" aria-hidden="true">
-        <svg viewBox="0 0 200 120">
-          <rect width="200" height="56" fill="#3b3530" />
-          <circle cx="160" cy="22" r="9" fill="#e9d8a6" opacity="0.7" />
-          <rect y="56" width="200" height="64" fill="#5a4030" />
-          <rect y="54" width="200" height="4" fill="#6b7a43" />
-          <path d="M70 56 V30 L100 12 L130 30 V56 Z" fill="#2a2420" stroke="#1a1612" />
-          <rect x="88" y="70" width="40" height="26" fill="#221d18" stroke="#8a8075" stroke-width="2" />
-          <rect x="88" y="70" width="40" height="26" fill="#f2a93b" opacity="0.18" />
-          <line x1="94" y1="56" x2="94" y2="70" stroke="#8a7a66" stroke-width="2" />
-          <circle cx="112" cy="80" r="3" fill="#e0b48a" />
-          <rect x="109" y="83" width="6" height="9" fill="#b5483b" />
-        </svg>
+      <header class="title-head">
+        <h1 class="logo">{T.app.title}</h1>
+        <p class="tagline">{T.app.tagline}</p>
+      </header>
+      <div class="title-scene">
+        <BunkerView s={title} interactive={false} />
       </div>
-      <h1 class="logo">{T.app.title}</h1>
-      <p class="tagline">{T.app.tagline}</p>
       <div class="menu-btns">
         {savedRun.value && (
           <button class="btn primary wide big" onClick={resume}>
@@ -60,12 +57,12 @@ export function Menu() {
         </button>
         {canInstall.value && (
           <button class="btn ghost wide" onClick={() => void promptInstall()}>
-            ⬇ {T.pwa.install}
+            {T.pwa.install}
           </button>
         )}
         {isIOS && !isStandalone() && (
           <button class="btn ghost wide" onClick={() => setIosOpen(true)}>
-            ⬇ {T.pwa.installIOS}
+            {T.pwa.installIOS}
           </button>
         )}
         <div class="row">
@@ -151,7 +148,10 @@ export function Briefing({ s }: { s: GameState }) {
   const hours = t.eventH - s.h;
   return (
     <div role="main" class="screen briefing">
-      <p class="alert-banner">⚠ {T.briefing.alert} ⚠</p>
+      <Banner s={s} kind="boss" id="briefing" />
+      <p class="alert-banner">
+        <PixelIcon name="alerta" size={20} /> {T.briefing.alert} <PixelIcon name="alerta" size={20} />
+      </p>
       <h1>{v ? `${th.name}: ${v.name}` : th.name}</h1>
       <p class="brief">{v ? v.brief : th.brief}</p>
       <dl class="report">
@@ -164,7 +164,7 @@ export function Briefing({ s }: { s: GameState }) {
         <dt>{T.briefing.seed}</dt>
         <dd class="num">{s.seed}</dd>
       </dl>
-      <p class="tip">💡 {v ? v.tip : th.tip}</p>
+      <p class="tip">{v ? v.tip : th.tip}</p>
       <div class="cta">
         <button class="btn primary wide big" onClick={() => act({ t: 'begin' })}>
           {T.briefing.begin}

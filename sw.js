@@ -1,10 +1,18 @@
 /* Service Worker de BÚNKER. Generado en el build: VERSION y PRECACHE se inyectan. */
-const VERSION = 'e7cf750826';
+const VERSION = '2133a1cfb9';
 const PRECACHE = [
  "./",
  "./index.html",
- "./assets/index-83NYDm9R.css",
- "./assets/index-2jE6TXZH.js",
+ "./assets/pixelify-sans-latin-400-normal-NSWc6_3u.woff2",
+ "./assets/pixelify-sans-latin-600-normal-3CrG1hjo.woff2",
+ "./assets/silkscreen-latin-400-normal-BPgV6gMp.woff2",
+ "./assets/silkscreen-latin-700-normal-3tFNWi8e.woff2",
+ "./assets/pixelify-sans-latin-400-normal-DObCLyZY.woff",
+ "./assets/pixelify-sans-latin-600-normal-CcgOpmdR.woff",
+ "./assets/silkscreen-latin-400-normal-Nzwutdwa.woff",
+ "./assets/silkscreen-latin-700-normal-CAHVpo4o.woff",
+ "./assets/index-A22A8Hrn.css",
+ "./assets/index-B4iVjDpX.js",
  "./manifest.webmanifest",
  "./icons/icon-192.png",
  "./icons/icon-512.png",

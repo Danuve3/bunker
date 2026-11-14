@@ -1,19 +1,27 @@
 /** Fase de crisis: plan del día, estado y vista del búnker. */
 import { useState } from 'preact/hooks';
-import { has } from '../../core/bunker';
 import { clockHour } from '../../core/env';
 import type { DayActivity, DayPlan, GameState, NightActivity } from '../../core/types';
 import { C, T, fmt, logText, moduleName, num, placeName } from '../../i18n';
 import { MapSheet } from './MapSheet';
-import { BunkerView } from '../bunker/BunkerView';
+import { PixelIcon } from '../components/PixelIcon';
+import { BunkerView } from '../bunker/BunkerCanvas';
 import { AlertBar, ResourceChips, SurvivorPanel } from '../components/Hud';
-import { Seg, Sheet, Toggle } from '../components/ui';
+import { Seg, Sheet } from '../components/ui';
 import { act, selectedCell, sheet, showReport } from '../store';
 import { CellSheet } from './CellSheet';
 import { TopBar } from './TopBar';
 
-const DAY_ACTS: DayActivity[] = ['expedicion', 'mantener', 'descansar', 'ocio', 'radio', 'ventilar', 'construir', 'potabilizar', 'curar', 'vigilar'];
+const DAY_ACTS: DayActivity[] = ['expedicion', 'trabajar', 'descansar', 'ocio', 'ventilar', 'curar'];
 const NIGHT_ACTS: NightActivity[] = ['dormir', 'guardia'];
+
+/** Un único control de raciones: ajusta comida y agua a la vez. */
+type RationLevel = 'normal' | 'racionar' | 'estricta';
+const RATIONS: Record<RationLevel, Partial<DayPlan>> = {
+  normal: { food: 'completa', water: 'normal' },
+  racionar: { food: 'reducida', water: 'reducida' },
+  estricta: { food: 'minima', water: 'minima' },
+};
 
 function ActPicker({ s, slot }: { s: GameState; slot: 'morning' | 'afternoon' | 'night' }) {
   const acts = slot === 'night' ? NIGHT_ACTS : DAY_ACTS.filter((a) => a !== 'expedicion' || s.map.length > 0);
@@ -22,7 +30,7 @@ function ActPicker({ s, slot }: { s: GameState; slot: 'morning' | 'afternoon' | 
     <Sheet title={T.plan[slot]} onClose={close}>
       <ul class="act-list">
         {acts.map((a) => {
-          const disabled = (a === 'radio' && !(s.inv.radio_dinamo > 0) && !has(s.bunker, 'radio')) || (a === 'construir' && !s.bunker.project);
+          const disabled = false;
           return (
             <li key={a}>
               <button
@@ -96,12 +104,8 @@ export function ReportSheet({ s }: { s: GameState }) {
             <dd class="num">{num(r.fuelUsedL, 1)} L</dd>
           </>
         )}
-        {s.inv.medidor_co2 > 0 && (
-          <>
-            <dt>{T.report.co2}</dt>
-            <dd class="num">{num(r.co2Max)} ppm</dd>
-          </>
-        )}
+        <dt>{T.report.co2}</dt>
+        <dd class="num">{num(Math.round(r.co2Max / 100) * 100)} ppm</dd>
         <dt>{T.report.temp}</dt>
         <dd class="num">{num(r.tempMin, 1)} °C</dd>
       </dl>
@@ -122,8 +126,7 @@ export function CrisisScreen({ s }: { s: GameState }) {
   const [showSurv, setShowSurv] = useState(false);
   const p = s.plan;
   const set = (plan: Partial<DayPlan>) => act({ t: 'plan', plan });
-  const hasGen = has(s.bunker, 'generador');
-  const hasFan = has(s.bunker, 'ventilacion');
+  const ration: RationLevel = p.food === 'minima' ? 'estricta' : p.food === 'reducida' ? 'racionar' : 'normal';
   const proj = s.bunker.project;
   const sec = s.threat.secondary && s.phase >= (s.threat.secondaryFromPhase ?? 99) ? s.threat.secondary : null;
   const threatName = (s.threat.variant ? C.variants[s.threat.variant].name : C.threats[s.threat.primary].name) + (sec ? ` + ${C.threats[sec].name}` : '');
@@ -148,7 +151,7 @@ export function CrisisScreen({ s }: { s: GameState }) {
         {showSurv && <SurvivorPanel s={s} />}
         {proj && (
           <p class="small">
-            🔨 {C.projects[proj.kind]} {proj.module ? moduleName(proj.module) : ''}: {Math.round(100 * (1 - proj.hoursLeft / proj.hoursTotal))} % · faltan {Math.ceil(proj.hoursLeft)} h
+            {C.projects[proj.kind]} {proj.module ? moduleName(proj.module) : ''}: {Math.round(100 * (1 - proj.hoursLeft / proj.hoursTotal))} % · faltan {Math.ceil(proj.hoursLeft)} h
           </p>
         )}
         <h3>{T.plan.title}</h3>
@@ -163,34 +166,17 @@ export function CrisisScreen({ s }: { s: GameState }) {
         </div>
         <label class="field">
           <span>
-            {T.plan.food} <span class="muted small">({T.plan.rationFood[p.food]})</span>
+            {T.plan.ration} <span class="muted small">({T.plan.rationDesc[ration]})</span>
           </span>
-          <Seg label={T.plan.food} value={p.food} onChange={(v) => set({ food: v })} options={(['completa', 'reducida', 'minima'] as const).map((v) => ({ v, label: T.plan.rations[v] }))} />
+          <Seg
+            label={T.plan.ration}
+            value={ration}
+            onChange={(v) => set(RATIONS[v])}
+            options={(['normal', 'racionar', 'estricta'] as const).map((v) => ({ v, label: T.plan.rationNames[v] }))}
+          />
         </label>
-        <label class="field">
-          <span>
-            {T.plan.water} <span class="muted small">({T.plan.rationWater[p.water]})</span>
-          </span>
-          <Seg label={T.plan.water} value={p.water} onChange={(v) => set({ water: v })} options={(['normal', 'reducida', 'minima'] as const).map((v) => ({ v, label: T.plan.rations[v] }))} />
-        </label>
-        <div class="toggles">
-          <span class="tog">
-            {T.plan.lights} <Toggle label={T.plan.lights} on={p.lights} onChange={(v) => set({ lights: v })} />
-          </span>
-          {hasFan && (
-            <span class="tog">
-              {T.plan.fan} <Toggle label={T.plan.fan} on={p.fan} onChange={(v) => set({ fan: v })} />
-            </span>
-          )}
-        </div>
-        {hasGen && (
-          <label class="field">
-            <span>{T.plan.generator}</span>
-            <Seg label={T.plan.generator} value={p.generator} onChange={(v) => set({ generator: v })} options={(['off', 'auto', 'on'] as const).map((v) => ({ v, label: T.plan.gen[v] }))} />
-          </label>
-        )}
         <button class="btn ghost wide" onClick={() => (sheet.value = 'log')}>
-          📓 {T.report.log}
+          <PixelIcon name="diario" size={20} /> {T.report.log}
         </button>
       </div>
       <div class="cta">

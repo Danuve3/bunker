@@ -37,19 +37,20 @@ export const MODULES: Record<ModuleType, ModuleData> = {
   despensa: { hours: 3, requires: { madera: 3 }, wearPerDay: 0.002, spoilMult: 0.7 },
   deposito_agua: { hours: 3, requires: { deposito_500: 1 }, wearPerDay: 0.003, waterCapL: 500 },
   generador: { hours: 5, requires: { generador_diesel: 1, madera: 2 }, wearPerDay: 0.012, noisePerH: 1 },
-  baterias: { hours: 3, requires: { bateria_agm: 2, inversor: 1 }, wearPerDay: 0.004, batteryWh: 1200 },
+  baterias: { hours: 3, requires: { bateria_agm: 2 }, wearPerDay: 0.004, batteryWh: 1200 },
   ventilacion: { hours: 4, requires: { ventilador_filtro: 1 }, powerW: 35, wearPerDay: 0.01, airflowM3h: 60, filtered: true },
   letrina: { hours: 2, requires: { inodoro_quimico: 1 }, wearPerDay: 0.005, hygieneDrainMult: 0.6, gastroRiskMult: 0.3 },
   enfermeria: { hours: 4, requires: { madera: 3, botiquin: 1 }, wearPerDay: 0.002, healMult: 1.5 },
-  taller: { hours: 5, requires: { madera: 6, herramientas: 1 }, wearPerDay: 0.003, repairMult: 1.6 },
+  // Retirados de la construcción para simplificar (se conservan sus efectos por compatibilidad):
+  taller: { hours: 5, requires: { madera: 6, herramientas: 1 }, wearPerDay: 0.003, repairMult: 1.6, minPhase: 99 },
   // LED de cultivo ~60 W. Producción: simplificación optimista (patata/legumbre en bandejas).
   hidroponico: { hours: 6, requires: { kit_hidroponico: 1, madera: 2 }, powerW: 60, wearPerDay: 0.008, kcalPerDay: 350 },
   radio: { hours: 3, requires: { emisora: 1, madera: 1 }, powerW: 8, wearPerDay: 0.003, moraleBonus: 1 },
   esclusa: { hours: 6, requires: { madera: 6, plastico_cinta: 1, cemento: 4 }, wearPerDay: 0.002, entryCap: 'esclusa' },
   puerta_blindada: { hours: 4, requires: { puerta_acero: 1, cemento: 2 }, wearPerDay: 0.001, doorStrength: 0.85, entryCap: 'puerta' },
-  periscopio: { hours: 3, requires: { tubo_periscopio: 1, madera: 1 }, wearPerDay: 0.002 },
+  periscopio: { hours: 3, requires: { tubo_periscopio: 1, madera: 1 }, wearPerDay: 0.002, minPhase: 99 },
   ocio: { hours: 3, requires: { madera: 2, libros_juegos: 1 }, wearPerDay: 0.002, moraleBonus: 2 },
-  purificador: { hours: 3, requires: { filtro_agua: 1 }, wearPerDay: 0.004, potabilizeMult: 2 },
+  purificador: { hours: 3, requires: { filtro_agua: 1 }, wearPerDay: 0.004, potabilizeMult: 2, minPhase: 99 },
 };
 
 /**

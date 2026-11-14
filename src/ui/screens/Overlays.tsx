@@ -7,6 +7,14 @@ import { SOURCES } from '../../data/sources';
 import { phaseLength } from '../../data/threats';
 import { C, T, fmt, itemName, logText, moduleName, num } from '../../i18n';
 import { act, newBest, randomSeed, showToast, start, toMenu } from '../store';
+import { PixelIcon } from '../components/PixelIcon';
+import { PixelCanvas } from '../components/PixelCanvas';
+import { BANNER_H, BANNER_W, BannerRenderer, type BannerKind } from '../pixel/banner';
+
+const banner = new BannerRenderer();
+export function Banner({ s, kind, id }: { s: GameState; kind: BannerKind; id: string }) {
+  return <PixelCanvas w={BANNER_W} h={BANNER_H} class="banner" draw={(cv, t, reduced) => banner.render(cv, s, kind, id, t, reduced)} deps={[s, kind, id]} />;
+}
 import { seedUrl, shareText } from '../../platform/share';
 
 export function CardModal({ s }: { s: GameState }) {
@@ -18,7 +26,8 @@ export function CardModal({ s }: { s: GameState }) {
   return (
     <div class="overlay">
       <article class={`card ${boss ? 'boss' : ''}`} role="dialog" aria-modal="true" aria-labelledby="card-title">
-        <p class="card-kind">{boss ? T.card.boss : T.card.event}</p>
+        <Banner s={s} kind={boss ? 'boss' : card.encounter ? 'encounter' : 'event'} id={card.id} />
+        <p class="card-kind">{boss ? T.card.boss : card.encounter ? T.card.encounter : T.card.event}</p>
         <h2 id="card-title">{txt.title}</h2>
         <p class="card-text">{txt.text}</p>
         <div class="choices">
@@ -42,7 +51,9 @@ export function CardModal({ s }: { s: GameState }) {
         </div>
         {txt.fact && (
           <details class="fact">
-            <summary>🔬 {T.card.fact}</summary>
+            <summary>
+              <PixelIcon name="diario" size={16} /> {T.card.fact}
+            </summary>
             <p>{txt.fact}</p>
             {src && (
               <p class="small">
@@ -64,7 +75,8 @@ export function PhaseEnd({ s }: { s: GameState }) {
   return (
     <div class="overlay">
       <article class="card win" role="dialog" aria-modal="true">
-        <p class="card-kind">✔</p>
+        <Banner s={s} kind="win" id="win" />
+        <p class="card-kind">{T.card.win}</p>
         <h2>{fmt(T.phaseEnd.title, { n: s.phase })}</h2>
         <p class="card-text">{T.phaseEnd.text}</p>
         {notes.length > 0 && (
@@ -126,9 +138,14 @@ export function DeathScreen({ s }: { s: GameState }) {
   return (
     <div role="main" class="screen death">
       <div class="death-inner">
+        <Banner s={s} kind="death" id="death" />
         <p class="card-kind">{threat}</p>
         <h1>{T.death.title}</h1>
-        {newBest.value && <p class="badge">★ {T.death.newBest}</p>}
+        {newBest.value && (
+          <p class="badge">
+            <PixelIcon name="estrella" size={20} /> {T.death.newBest}
+          </p>
+        )}
         <p class="cause">{C.causes[s.deathCause ?? 'heridas']}</p>
         <dl class="report">
           <dt>{T.death.days}</dt>
@@ -154,7 +171,7 @@ export function DeathScreen({ s }: { s: GameState }) {
           ))}
         </ul>
         <button class="btn wide" onClick={() => shareRun(s)}>
-          ↗ {T.death.share}
+          {T.death.share}
         </button>
         <div class="row">
           <button class="btn ghost" onClick={toMenu}>

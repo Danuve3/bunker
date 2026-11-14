@@ -44,20 +44,22 @@ export interface ItemData {
   demand: number;
   /** Amenazas en las que la demanda se dispara (×1,6). */
   hot?: string[];
+  /** No se vende en las tiendas (se conserva por compatibilidad: botín, comida inicial…). */
+  hidden?: boolean;
 }
 
 export const ITEMS: Record<string, ItemData> = {
   // ── Supermercado ──
   garrafa_agua: { shop: 'super', price: 1.4, kind: 'water', liters: 8, stock: 60, demand: 0.9 },
   arroz: { shop: 'super', price: 1.3, kind: 'food', kcal: 3600, shelfDays: 720, cook: true, stock: 40, demand: 0.85 },
-  pasta: { shop: 'super', price: 1.1, kind: 'food', kcal: 3600, shelfDays: 540, cook: true, stock: 40, demand: 0.8 },
+  pasta: { hidden: true, shop: 'super', price: 1.1, kind: 'food', kcal: 3600, shelfDays: 540, cook: true, stock: 40, demand: 0.8 },
   legumbres: { shop: 'super', price: 0.95, kind: 'food', kcal: 300, shelfDays: 1000, stock: 80, demand: 0.7 },
-  atun: { shop: 'super', price: 3.5, kind: 'food', kcal: 600, shelfDays: 1400, stock: 50, demand: 0.7 },
+  atun: { hidden: true, shop: 'super', price: 3.5, kind: 'food', kcal: 600, shelfDays: 1400, stock: 50, demand: 0.7 },
   conserva_plato: { shop: 'super', price: 2.2, kind: 'food', kcal: 450, shelfDays: 1000, stock: 60, demand: 0.75 },
-  aceite: { shop: 'super', price: 9, kind: 'food', kcal: 8200, shelfDays: 540, stock: 20, demand: 0.5 },
-  frutos_secos: { shop: 'super', price: 5.5, kind: 'food', kcal: 3000, shelfDays: 240, stock: 25, demand: 0.5 },
+  aceite: { hidden: true, shop: 'super', price: 9, kind: 'food', kcal: 8200, shelfDays: 540, stock: 20, demand: 0.5 },
+  frutos_secos: { hidden: true, shop: 'super', price: 5.5, kind: 'food', kcal: 3000, shelfDays: 240, stock: 25, demand: 0.5 },
   galletas: { shop: 'super', price: 2.5, kind: 'food', kcal: 3600, shelfDays: 300, stock: 40, demand: 0.6 },
-  fresco: { shop: 'super', price: 6, kind: 'food', kcal: 1500, shelfDays: 6, stock: 30, demand: 0.4 },
+  fresco: { hidden: true, shop: 'super', price: 6, kind: 'food', kcal: 1500, shelfDays: 6, stock: 30, demand: 0.4 },
   lejia: { shop: 'super', price: 1.2, kind: 'goods', adds: { id: 'lejia_ml', n: 1000 }, stock: 20, demand: 0.6 },
   pilas: { shop: 'super', price: 5, kind: 'goods', adds: { id: 'pilas', n: 1 }, stock: 30, demand: 0.6 },
   higiene: { shop: 'super', price: 12, kind: 'goods', adds: { id: 'higiene', n: 1 }, stock: 20, demand: 0.5, hot: ['pandemia'] },
@@ -68,16 +70,16 @@ export const ITEMS: Record<string, ItemData> = {
   cemento: { shop: 'ferreteria', price: 5, kind: 'goods', adds: { id: 'cemento', n: 1 }, stock: 60, demand: 0.3 },
   plastico_cinta: { shop: 'ferreteria', price: 20, kind: 'goods', adds: { id: 'plastico_cinta', n: 1 }, stock: 15, demand: 0.6, hot: ['pandemia', 'nuclear'] },
   deposito_500: { shop: 'ferreteria', price: 140, kind: 'goods', adds: { id: 'deposito_500', n: 1 }, stock: 4, demand: 0.4 },
-  bidon_25: { shop: 'ferreteria', price: 14, kind: 'goods', adds: { id: 'bidon_25', n: 1 }, stock: 20, demand: 0.6 },
+  bidon_25: { hidden: true, shop: 'ferreteria', price: 14, kind: 'goods', adds: { id: 'bidon_25', n: 1 }, stock: 20, demand: 0.6 },
   generador_diesel: { shop: 'ferreteria', price: 950, kind: 'goods', adds: { id: 'generador_diesel', n: 1 }, stock: 3, demand: 0.7, hot: ['colapso', 'clima'] },
   bateria_agm: { shop: 'ferreteria', price: 210, kind: 'goods', adds: { id: 'bateria_agm', n: 1 }, stock: 8, demand: 0.4 },
-  inversor: { shop: 'ferreteria', price: 160, kind: 'goods', adds: { id: 'inversor', n: 1 }, stock: 5, demand: 0.4 },
+  inversor: { hidden: true, shop: 'ferreteria', price: 160, kind: 'goods', adds: { id: 'inversor', n: 1 }, stock: 5, demand: 0.4 },
   ventilador_filtro: { shop: 'ferreteria', price: 90, kind: 'goods', adds: { id: 'ventilador_filtro', n: 1 }, stock: 5, demand: 0.5, hot: ['nuclear', 'pandemia'] },
   filtro_hepa: { shop: 'ferreteria', price: 45, kind: 'goods', adds: { id: 'filtro_hepa', n: 1 }, stock: 10, demand: 0.6, hot: ['nuclear', 'pandemia'] },
   puerta_acero: { shop: 'ferreteria', price: 600, kind: 'goods', adds: { id: 'puerta_acero', n: 1 }, stock: 2, demand: 0.3 },
   inodoro_quimico: { shop: 'ferreteria', price: 80, kind: 'goods', adds: { id: 'inodoro_quimico', n: 1 }, stock: 5, demand: 0.4 },
-  tubo_periscopio: { shop: 'ferreteria', price: 30, kind: 'goods', adds: { id: 'tubo_periscopio', n: 1 }, stock: 4, demand: 0.1 },
-  medidor_co2: { shop: 'ferreteria', price: 60, kind: 'goods', adds: { id: 'medidor_co2', n: 1 }, stock: 5, demand: 0.2 },
+  tubo_periscopio: { hidden: true, shop: 'ferreteria', price: 30, kind: 'goods', adds: { id: 'tubo_periscopio', n: 1 }, stock: 4, demand: 0.1 },
+  medidor_co2: { hidden: true, shop: 'ferreteria', price: 60, kind: 'goods', adds: { id: 'medidor_co2', n: 1 }, stock: 5, demand: 0.2 },
   // ── Farmacia ──
   botiquin: { shop: 'farmacia', price: 35, kind: 'goods', adds: { id: 'botiquin', n: 1 }, stock: 10, demand: 0.6 },
   analgesicos: { shop: 'farmacia', price: 4, kind: 'goods', adds: { id: 'analgesicos', n: 1 }, stock: 25, demand: 0.7 },
@@ -90,7 +92,7 @@ export const ITEMS: Record<string, ItemData> = {
   cartuchos_gas: { shop: 'outdoor', price: 10, kind: 'goods', adds: { id: 'gas', n: 4 }, stock: 20, demand: 0.6 },
   saco_dormir: { shop: 'outdoor', price: 70, kind: 'goods', adds: { id: 'saco_dormir', n: 1 }, stock: 6, demand: 0.5, hot: ['clima'] },
   ropa_termica: { shop: 'outdoor', price: 45, kind: 'goods', adds: { id: 'ropa_termica', n: 1 }, stock: 8, demand: 0.4, hot: ['clima'] },
-  mantas: { shop: 'outdoor', price: 25, kind: 'goods', adds: { id: 'mantas', n: 1 }, stock: 10, demand: 0.4 },
+  mantas: { hidden: true, shop: 'outdoor', price: 25, kind: 'goods', adds: { id: 'mantas', n: 1 }, stock: 10, demand: 0.4 },
   linterna: { shop: 'outdoor', price: 20, kind: 'goods', adds: { id: 'linterna', n: 1 }, stock: 10, demand: 0.5 },
   radio_dinamo: { shop: 'outdoor', price: 35, kind: 'goods', adds: { id: 'radio_dinamo', n: 1 }, stock: 6, demand: 0.5 },
   filtro_agua: { shop: 'outdoor', price: 60, kind: 'goods', adds: { id: 'filtro_agua', n: 1 }, stock: 5, demand: 0.5 },
@@ -98,10 +100,10 @@ export const ITEMS: Record<string, ItemData> = {
   // ── Tienda online (llega en 24 h si el evento no lo impide) ──
   dosimetro: { shop: 'online', price: 160, kind: 'goods', adds: { id: 'dosimetro', n: 1 }, stock: 5, demand: 0.3, hot: ['nuclear'] },
   liofilizada: { shop: 'online', price: 12, kind: 'food', kcal: 2000, shelfDays: 3600, stock: 40, demand: 0.6 },
-  bateria_online: { shop: 'online', price: 180, kind: 'goods', adds: { id: 'bateria_agm', n: 1 }, stock: 6, demand: 0.3 },
+  bateria_online: { hidden: true, shop: 'online', price: 180, kind: 'goods', adds: { id: 'bateria_agm', n: 1 }, stock: 6, demand: 0.3 },
   kit_hidroponico: { shop: 'online', price: 140, kind: 'goods', adds: { id: 'kit_hidroponico', n: 1 }, stock: 4, demand: 0.2 },
   emisora: { shop: 'online', price: 260, kind: 'goods', adds: { id: 'emisora', n: 1 }, stock: 3, demand: 0.3 },
-  filtro_online: { shop: 'online', price: 35, kind: 'goods', adds: { id: 'filtro_hepa', n: 1 }, stock: 8, demand: 0.4 },
+  filtro_online: { hidden: true, shop: 'online', price: 35, kind: 'goods', adds: { id: 'filtro_hepa', n: 1 }, stock: 8, demand: 0.4 },
   // ── Alquiler ──
   miniexcavadora: { shop: 'alquiler', price: 280, kind: 'service', stock: 2, demand: 0.6 },
 };
@@ -136,3 +138,15 @@ export const CONSUMPTION = {
   tankFillH: 0.6,
   potabilizarLPerH: 8,
 } as const;
+
+/**
+ * Lote recomendado por tienda (botón «Añadir lote»): una compra sensata para empezar,
+ * pensada para que la fase 0 no abrume. Cantidades orientativas para ~2 semanas.
+ */
+export const RECOMMENDED: Partial<Record<ShopId, Record<string, number>>> = {
+  super: { garrafa_agua: 8, legumbres: 15, conserva_plato: 10, galletas: 3, arroz: 2, lejia: 1, pilas: 2 },
+  ferreteria: { herramientas: 1, madera: 1, cemento: 4, sacos: 2 },
+  farmacia: { botiquin: 1, analgesicos: 2, sro: 2, ffp2: 1 },
+  gasolinera: { diesel: 2 },
+  outdoor: { hornillo: 1, cartuchos_gas: 2, linterna: 1, radio_dinamo: 1 },
+};

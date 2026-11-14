@@ -1,63 +1,63 @@
 
 ══ Bot: pasivo (300 partidas) ══
 amenaza              n  fase  días  supera F1  puntos  dosis mSv
-clima/frio            18   1.5   4.1        50%     116          0
-clima/inundacion      27   2.0   5.8       100%     213          0
-clima/tormenta_solar  17   2.1   7.0       100%     238          0
-colapso               69   2.1   6.7       100%     232          0
-nuclear               93   2.0   6.2       100%     218       1050
-pandemia              76   3.1  15.1       100%     473          0
-Causas de muerte: deshidratacion 95%, hipotermia 5%, inanicion 0%
-Recurso agotado al morir: agua 99%, ninguno 0%, comida 0%
+clima/frio            18   1.5   3.9        50%     114          0
+clima/inundacion      27   2.0   6.0       100%     216          0
+clima/tormenta_solar  17   2.0   6.6       100%     216          0
+colapso               69   2.1   7.0       100%     237          0
+nuclear               93   2.1   6.5       100%     229       1067
+pandemia              76   3.2  15.2       100%     476          0
+Causas de muerte: deshidratacion 94%, hipotermia 5%, inanicion 0%
+Recurso agotado al morir: agua 99%, ninguno 0%, comida 1%
 
 ══ Bot: acaparador (300 partidas) ══
 amenaza              n  fase  días  supera F1  puntos  dosis mSv
-clima/frio            18   4.7  33.6       100%     886          0
-clima/inundacion      27   5.1  41.1       100%    1028          0
-clima/tormenta_solar  17   4.8  36.1       100%     934          0
-colapso               69   4.8  37.3       100%     941          0
-nuclear               93   4.7  33.3       100%     886       1524
-pandemia              76   5.7  52.8       100%    1234          0
-Causas de muerte: inanicion 91%, radiacion 6%, hipotermia 2%, infeccion 1%, heridas 0%
-Recurso agotado al morir: comida 39%, ninguno 61%
+clima/frio            18   4.3  33.2       100%     832          0
+clima/inundacion      27   5.9  55.5       100%    1294          0
+clima/tormenta_solar  17   5.2  46.8       100%    1103          0
+colapso               69   5.0  41.6       100%    1022          0
+nuclear               93   5.4  48.5       100%    1147       1405
+pandemia              76   5.7  52.8       100%    1237          0
+Causas de muerte: inanicion 94%, hipotermia 4%, radiacion 2%, deshidratacion 0%
+Recurso agotado al morir: comida 81%, ninguno 18%, agua 1%
 
 ══ Bot: constructor (300 partidas) ══
 amenaza              n  fase  días  supera F1  puntos  dosis mSv
-clima/frio            18   4.8  37.6       100%     943          0
-clima/inundacion      27   4.5  35.2       100%     880          0
-clima/tormenta_solar  17   4.4  31.9       100%     831          0
-colapso               69   4.7  35.0       100%     909          0
-nuclear               93   4.2  28.2       100%     766       1526
-pandemia              76   5.2  44.3       100%    1076          0
-Causas de muerte: inanicion 84%, radiacion 6%, infeccion 5%, deshidratacion 5%, hipotermia 1%
-Recurso agotado al morir: comida 55%, ninguno 41%, agua 4%
+clima/frio            18   4.9  39.6       100%     987          0
+clima/inundacion      27   5.1  40.6       100%    1017          0
+clima/tormenta_solar  17   5.0  36.4       100%     964          0
+colapso               69   4.8  35.7       100%     922          0
+nuclear               93   5.0  37.7       100%     974       1178
+pandemia              76   5.2  44.1       100%    1074          0
+Causas de muerte: inanicion 97%, infeccion 2%, heridas 1%, deshidratacion 1%, hipotermia 0%
+Recurso agotado al morir: comida 80%, ninguno 19%, agua 1%
 
 ══ Bot: explorador (300 partidas) ══
 amenaza              n  fase  días  supera F1  puntos  dosis mSv
-clima/frio            18   3.7  22.4       100%     624          0
-clima/inundacion      27   4.4  30.7       100%     818          0
-clima/tormenta_solar  17   4.2  29.3       100%     769          0
-colapso               69   4.4  30.5       100%     814          0
-nuclear               93   4.7  35.0       100%     904       1297
-pandemia              76   4.9  38.2       100%     968          0
-Causas de muerte: inanicion 86%, infeccion 6%, deshidratacion 3%, radiacion 2%, heridas 1%, hipotermia 1%
-Recurso agotado al morir: comida 49%, ninguno 47%, agua 4%
+clima/frio            18   4.5  32.2       100%     847          0
+clima/inundacion      27   5.4  46.4       100%    1119          0
+clima/tormenta_solar  17   5.1  37.5       100%     984          0
+colapso               69   4.7  33.2       100%     890          0
+nuclear               93   5.0  38.8       100%     992       1276
+pandemia              76   4.9  38.2       100%     974          0
+Causas de muerte: inanicion 91%, infeccion 5%, radiacion 2%, hipotermia 1%, heridas 1%
+Recurso agotado al morir: comida 77%, ninguno 23%, agua 0%
 
 ══ Bot: equilibrado (300 partidas) ══
 amenaza              n  fase  días  supera F1  puntos  dosis mSv
-clima/frio            18   4.1  26.7       100%     733          0
-clima/inundacion      27   4.5  34.6       100%     868          0
-clima/tormenta_solar  17   4.5  32.2       100%     843          0
-colapso               69   4.7  32.3       100%     871          0
-nuclear               93   4.3  28.5       100%     774       1523
-pandemia              76   5.2  42.6       100%    1049          0
-Causas de muerte: inanicion 78%, radiacion 6%, infeccion 6%, deshidratacion 6%, hipotermia 3%, heridas 1%
-Recurso agotado al morir: ninguno 42%, comida 53%, agua 5%
+clima/frio            18   4.1  26.7       100%     726          0
+clima/inundacion      27   5.0  39.7       100%    1002          0
+clima/tormenta_solar  17   4.9  36.2       100%     954          0
+colapso               69   4.7  33.4       100%     893          0
+nuclear               93   4.8  36.2       100%     938       1434
+pandemia              76   5.1  42.3       100%    1044          0
+Causas de muerte: inanicion 89%, infeccion 4%, hipotermia 4%, heridas 2%, radiacion 2%, deshidratacion 1%
+Recurso agotado al morir: comida 76%, ninguno 23%, agua 1%
 
 ══ Resumen por estrategia ══
 bot            fase   días  supera F1  puntos
-pasivo         2.30    8.5        97 %     280
-acaparador     5.01   40.0       100 %    1002
-constructor    4.66   35.2       100 %     902
-explorador     4.56   33.3       100 %     867
-equilibrado    4.60   33.6       100 %     876
+pasivo         2.32    8.6        97 %     284
+acaparador     5.38   47.6       100 %    1133
+constructor    5.00   39.1       100 %     992
+explorador     4.94   37.6       100 %     966
+equilibrado    4.87   36.9       100 %     949

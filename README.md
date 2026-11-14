@@ -7,7 +7,7 @@ Roguelite de supervivencia para móvil, en forma de PWA instalable que funciona 
 ## Cómo se juega
 
 1. **Fase 0: preparación.** Se anuncia la amenaza con un margen (de horas a días) y un presupuesto. Compra en siete tiendas: cada viaje cuesta tiempo y, a medida que se acerca el evento, las existencias se agotan y los precios suben. Excava salas (a mano o con miniexcavadora), monta módulos, apila sacos terreros, llena la bañera y los depósitos. Cuando quieras, pulsa *Encerrarse ya*.
-2. **Fases de crisis** (3, 5, 8, 12, 16, 20… días). Cada día planificas la mañana, la tarde y la noche: mantener equipos, bombear aire, construir, potabilizar, curarte, vigilar, descansar o **salir de expedición**. También fijas las raciones de agua y comida, el ventilador, el generador y las luces. Al pulsar *Vivir el día*, la simulación avanza hora a hora.
+2. **Fases de crisis** (3, 5, 8, 12, 16, 20… días). Cada día eliges qué haces por la mañana, por la tarde y por la noche entre seis acciones: **Expedición**, **Trabajar** (avanza la obra o, si no hay, mantiene, repara y potabiliza), **Descansar**, **Ocio** (con radio, también noticias), **Ventilar** y **Curarse**. Por la noche, dormir o hacer guardia. Las raciones se ajustan con un único control (Normal / Racionar / Estricta). Ventilador, luces y generador funcionan solos. Al pulsar *Vivir el día*, la simulación avanza hora a hora.
 3. **Sucesos**: cartas con 2 o 3 decisiones, a veces con consecuencias diferidas u ocultas, y muchas con una ficha **«Dato real»** con su fuente.
 4. **Crisis final de fase**: lluvia negra, brote, asalto, ola de frío, crecida, tormenta G5, apagón total… Si la superas, eliges **1 de 3 habilidades** (perks) para la fase siguiente.
 5. A partir de la fase 3 o 4 puede encadenarse una **amenaza secundaria** con lógica causal: tras una guerra nuclear llega el colapso civil, tras una inundación una epidemia, etc.
@@ -56,6 +56,17 @@ Para regenerar los iconos y las pantallas de inicio de iOS (requiere Playwright 
 node scripts/gen-icons.cjs
 ```
 
+### Estilo visual
+
+Todo el arte es **pixel art propio dibujado por código** (sin imágenes externas), con el mismo motor en todas partes:
+
+- **Búnker en corte lateral** (`src/ui/pixel/scene.ts`): cielo por capas según la amenaza y la hora (ceniza y hongo nuclear, auroras de la tormenta solar, humo de incendios, nieve, tormenta con relámpagos), horizonte de ciudad, casa con su estado (tapiada, nevada, cubierta de ceniza), estratos de tierra, arcilla y roca con texturas orgánicas, salas de hormigón con puertas, escotillas, escaleras y tuberías, y luz cálida a resolución de pantalla.
+- **Sprites animados** (`src/ui/pixel/sprites.ts`): el superviviente (respira, duerme, enferma), los 13 módulos con sus partes móviles (aspas del ventilador, vibración y LED del generador, nivel del depósito, plantas que crecen, chispas cuando hay averías) y la obra en curso.
+- **Mapa de expediciones** en vista cenital, **viñetas** en las cartas, portada animada e **iconos 16×16** (`src/ui/pixel/icons.ts`) en lugar de emojis.
+- **Fuentes pixel** empaquetadas (OFL): Pixelify Sans y Silkscreen. Funcionan sin conexión.
+- El icono de la app y las pantallas de inicio de iOS se generan con el mismo motor (`node scripts/gen-icons.cjs`).
+- Para revisar el arte hay un laboratorio solo de desarrollo: `npm run dev` y abrir `/lab.html`.
+
 ### Stack y arquitectura
 
 - **TypeScript + Vite + Preact/signals**: unos 87 KB gz de JS en total, contenido incluido.
@@ -66,7 +77,7 @@ web/           Fuente de la página: web/index.html y web/public/ (manifest, ico
 src/core/      Simulación: estado, PRNG, sistemas horarios, fase 0, días, cartas, expediciones, perks
 src/data/      TODOS los valores numéricos, cada uno con su fuente o marcado como simplificación
 src/i18n/      Todos los textos en español (UI, contenido, 99 cartas), listos para traducir
-src/ui/        Preact: corte lateral del búnker en SVG, clima en Canvas, pantallas y hojas
+src/ui/        Preact: pantallas y hojas; src/ui/pixel/ es el motor pixel art (Canvas)
 src/audio/     Motor Web Audio 100 % sintetizado (sin archivos)
 src/platform/  IndexedDB con respaldo en localStorage, récords, compartir, vibración
 src/pwa/       Plantilla del Service Worker, registro, actualización e instalación
@@ -109,11 +120,11 @@ git add -A && git commit -m "…" && git push origin main
 
 | Estrategia | Fase media | Días medios | Supera la fase 1 |
 |---|---|---|---|
-| Pasivo (no hace nada) | 2,3 | 8,5 | 97 % |
-| Acaparador | 5,0 | 40,0 | 100 % |
-| Constructor | 4,7 | 35,2 | 100 % |
-| Explorador | 4,6 | 33,3 | 100 % |
-| Equilibrado | 4,6 | 33,6 | 100 % |
+| Pasivo (no hace nada) | 2,3 | 8,6 | 97 % |
+| Acaparador | 5,4 | 47,6 | 100 % |
+| Constructor | 5,0 | 39,1 | 100 % |
+| Explorador | 4,9 | 37,6 | 100 % |
+| Equilibrado | 4,9 | 37,0 | 100 % |
 
 La primera fase se supera, pero quien no se prepara muere en la segunda (deshidratación). Las estrategias activas quedan dentro de un ±10 %, así que ninguna domina. La comida es el recurso que limita a largo plazo, lo que empuja a salir de expedición. Las amenazas matan también por su propio mecanismo: radiación (~6 %), infección (~5 %), hipotermia y heridas.
 

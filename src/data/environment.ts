@@ -76,7 +76,7 @@ export const AIR = {
   co2DensityKgM3: 1.84,
   outdoorPpm: 420,
   /** Renovaciones/hora por infiltración de un recinto enterrado cerrado (simplificación). */
-  leakAch: 0.2,
+  leakAch: 0.35, // sótano doméstico no hermético: CO₂ «cargado» (~3.000 ppm) sin ventilar (simplificación)
   /** Caudal de un ventilador con filtro (m³/h). */
   fanM3h: 60,
   /** Bomba manual tipo KAP accionada a mano (kearny_nwss), m³/h medios (simplificación). */

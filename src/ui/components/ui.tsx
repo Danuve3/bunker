@@ -1,6 +1,7 @@
 /** Componentes de interfaz reutilizables. */
 import type { ComponentChildren } from 'preact';
 import { useEffect } from 'preact/hooks';
+import { PixelIcon } from './PixelIcon';
 
 export function Sheet({ title, onClose, children, footer }: { title: string; onClose: () => void; children: ComponentChildren; footer?: ComponentChildren }) {
   useEffect(() => {
@@ -43,8 +44,8 @@ export function Bar({ label, value, max = 100, tone, text }: { label: string; va
 export function Chip({ icon, label, value, sub, tone }: { icon: string; label: string; value: string; sub?: string; tone?: 'good' | 'warn' | 'bad' }) {
   return (
     <div class={`chip ${tone ? `tone-${tone}` : ''}`} aria-label={`${label}: ${value} ${sub ?? ''}`}>
-      <span class="chip-icon" aria-hidden="true">
-        {icon}
+      <span class="chip-icon">
+        <PixelIcon name={icon} size={28} />
       </span>
       <span class="chip-text">
         <span class="chip-val num">{value}</span>
