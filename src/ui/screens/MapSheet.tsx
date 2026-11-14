@@ -55,7 +55,17 @@ export function MapSheet({ s, slot }: { s: GameState; slot: 'morning' | 'afterno
           const y = Math.sin(l.angle) * rad(l.distKm);
           const on = l.id === sel;
           return (
-            <g key={l.id} transform={`translate(${x} ${y})`} onClick={() => setSel(l.id)} class="map-pin" role="button" aria-label={placeName(l.id, l.variant)}>
+            <g
+              key={l.id}
+              transform={`translate(${x} ${y})`}
+              onClick={() => setSel(l.id)}
+              onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), setSel(l.id))}
+              class="map-pin"
+              role="button"
+              {...{ tabindex: 0 }}
+              aria-pressed={on}
+              aria-label={`${placeName(l.id, l.variant)}, ${num(l.distKm, 1)} km`}
+            >
               <circle r="22" fill="transparent" />
               <circle r={on ? 15 : 12} fill={on ? '#f2a93b' : l.looted > 0.85 ? '#3a332b' : '#2a231c'} stroke={on ? '#fff' : '#8a7a66'} stroke-width="2" />
               <text y="5" text-anchor="middle" font-size="13">

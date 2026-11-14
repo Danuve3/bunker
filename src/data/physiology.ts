@@ -124,7 +124,7 @@ export const HEALTH = {
   dehydrationDmgPerLH: 0.25, // por litro de déficit por encima del moderado, por hora
   starvationDmgPer10kH: 0.06,
   hypothermiaDmgPerDegH: 1.0,
-  infectionDmgPerSevH: 0.03, // por punto de gravedad por encima de 40
+  infectionDmgPerSevH: 0.045, // por punto de gravedad por encima de 40 (simplificación)
   injuryDmgPerPointH: 0.02, // por punto de herida por encima de 30
   co2DmgPer10kH: 0.5, // por cada 10.000 ppm por encima de 30.000
 } as const;
@@ -143,7 +143,7 @@ export const INFECTIONS: Record<InfectionKind, InfectionData> = {
   gastro: { incubationH: [12, 48], activeH: [48, 120], peak: [35, 70], waterLossLPerH: 0.07, fatigueMult: 1.3 },
   herida: { incubationH: [24, 72], activeH: [72, 168], peak: [40, 85], waterLossLPerH: 0.01, fatigueMult: 1.2 },
   respiratoria: { incubationH: [24, 96], activeH: [96, 168], peak: [30, 60], waterLossLPerH: 0.02, fatigueMult: 1.4 },
-  pandemia: { incubationH: [48, 168], activeH: [120, 240], peak: [55, 95], waterLossLPerH: 0.03, fatigueMult: 1.6 },
+  pandemia: { incubationH: [48, 168], activeH: [120, 240], peak: [65, 100], waterLossLPerH: 0.03, fatigueMult: 1.6 },
 };
 
 /** Cuidados: cuánto reduce cada recurso el pico de la infección activa (fracción). */

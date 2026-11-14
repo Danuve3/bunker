@@ -133,6 +133,8 @@ h3 { font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.08em; colo
   touch-action: manipulation;
 }
 .bunker .cell { cursor: pointer; }
+.bunker .cell:focus-visible, .map-pin:focus-visible { outline: 3px solid var(--accent); outline-offset: -3px; }
+.bunker .cell:focus { outline: none; }
 .depth-label { fill: #e8dcc6; opacity: 0.55; font-size: 11px; font-family: var(--font); }
 .broken-tag { fill: var(--bad); font-size: 28px; font-weight: 900; }
 .pulse { animation: pulse 1.6s ease-in-out infinite; }

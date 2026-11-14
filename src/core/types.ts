@@ -150,6 +150,8 @@ export interface ThreatState {
   fallout: FalloutSource[];
   /** Presión de contagio exterior (prob./h de exposición sin protección). */
   infectionPressure: number;
+  /** Contagio por aire interior sin filtrar (prob./h). */
+  insideInfection?: number;
   /** Presión de saqueadores (0..1). */
   looterPressure: number;
   /** Hora absoluta a la que cae la red eléctrica (Infinity = nunca, null = ya). */

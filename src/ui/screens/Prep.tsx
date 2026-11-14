@@ -120,7 +120,7 @@ export function PrepScreen({ s }: { s: GameState }) {
   const exc = s.excavatorUntilH > s.h;
   const urgent = left <= 6;
   return (
-    <div class="screen prep">
+    <div role="main" class="screen prep">
       <TopBar
         left={
           <span class={urgent ? 'tone-bad blink' : ''}>

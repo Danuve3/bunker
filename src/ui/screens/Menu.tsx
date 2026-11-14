@@ -17,7 +17,7 @@ export function Menu() {
   const guard = (fn: () => void) => () => (savedRun.value ? setConfirm(() => fn) : fn());
   const today = dailySeed(new Date());
   return (
-    <div class="screen menu">
+    <div role="main" class="screen menu">
       <div class="menu-art" aria-hidden="true">
         <svg viewBox="0 0 200 120">
           <rect width="200" height="56" fill="#3b3530" />
@@ -150,7 +150,7 @@ export function Briefing({ s }: { s: GameState }) {
   const v = t.variant ? C.variants[t.variant] : null;
   const hours = t.eventH - s.h;
   return (
-    <div class="screen briefing">
+    <div role="main" class="screen briefing">
       <p class="alert-banner">⚠ {T.briefing.alert} ⚠</p>
       <h1>{v ? `${th.name}: ${v.name}` : th.name}</h1>
       <p class="brief">{v ? v.brief : th.brief}</p>
@@ -176,7 +176,7 @@ export function Briefing({ s }: { s: GameState }) {
 
 export function HowTo() {
   return (
-    <div class="screen howto">
+    <div role="main" class="screen howto">
       <header class="topbar">
         <button class="icon-btn" aria-label={T.common.back} onClick={() => (screen.value = 'menu')}>
           ←
@@ -194,12 +194,20 @@ export function HowTo() {
         <p>
           Cada día eliges qué haces por la mañana, por la tarde y por la noche, y fijas las raciones de comida y agua. Al final de cada fase llega una crisis final. Si sobrevives, empieza otra fase más larga.
         </p>
+        <h3>Expediciones</h3>
+        <p>
+          Elige «Expedición» en una franja para salir a buscar comida, agua, medicinas o materiales a lugares cercanos. Fuera te expones a la radiación, al contagio, al frío y a otras personas, y mientras tanto el búnker se queda solo. Puedes cargar hasta 25 kg.
+        </p>
+        <h3>Habilidades</h3>
+        <p>Al superar cada fase eliges una de tres habilidades. Algunas tienen contrapartida. A partir de la fase 3 o 4 puede llegar una segunda amenaza encadenada.</p>
         <h3>Sobrevivir</h3>
         <p>
           Vigila el agua (≈3,8 L/día), la comida (≈2.300 kcal/día), el aire (el CO₂ se acumula si no ventilas), el frío y la radiación. Cuanto más hondo, más protegido estás: cada 9 cm de tierra reducen a la mitad la radiación de la lluvia radiactiva.
         </p>
         <h3>Datos reales</h3>
         <p>Los números del juego salen de FEMA, CDC, OMS, NIOSH, NASA y Kearny, entre otras fuentes. Muchos sucesos incluyen una ficha «Dato real» con su fuente.</p>
+        <h3>Instalar y jugar sin conexión</h3>
+        <p>BÚNKER es una app web instalable: en Android, usa «Instalar la app»; en iPhone, Compartir → «Añadir a pantalla de inicio». Una vez cargada, funciona en modo avión.</p>
         <p class="small muted">El juego se guarda solo después de cada acción. Puedes cerrarlo cuando quieras.</p>
       </div>
     </div>

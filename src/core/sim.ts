@@ -21,6 +21,7 @@ import { eat } from './food';
 import { exposureFactor } from './expedition';
 import { EXPEDITION, LOCATIONS, type LocType } from '../data/locations';
 import { clamp, log } from './log';
+import { phasePressure } from '../data/threats';
 import { perkMods } from './perks';
 import type { Rng } from './rng';
 import type { DayActivity, DayReport, DeathCause, GameState, InfectionKind } from './types';
@@ -311,7 +312,8 @@ export function simulateHour(s: GameState, rng: Rng, act0: HourAct, r: DayReport
     p *= pm.infectionMult;
     if (rng.chance(p) && infect(s, rng, 'pandemia')) log(s, 'log.contagio', undefined, 'warn');
   }
-  const insideP = awayLoc ? 0 : modValue(s, 'infection');
+  const insideP =
+    awayLoc || s.h < s.threat.eventH ? 0 : modValue(s, 'infection') + (s.threat.insideInfection ?? 0) * phasePressure(Math.max(1, s.phase));
   if (insideP > 0) {
     let p = insideP * (Q > 0 ? unfilteredQ / Q : 1);
     if (modActive(s, 'masks')) p *= 0.06; // FFP2 ≥94 % (niosh_n95)

@@ -5,6 +5,7 @@ import { clockHour, gridUp, isNight, modActive } from '../../core/env';
 import { batteryFrac } from '../../core/selectors';
 import type { GameState } from '../../core/types';
 import { selectedCell } from '../store';
+import { C, moduleName } from '../../i18n';
 import { ModuleGlyph, Survivor } from './Glyphs';
 import { WeatherCanvas, type WeatherKind } from './WeatherCanvas';
 
@@ -212,7 +213,19 @@ export function BunkerView({ s, buildMode = false }: { s: GameState; buildMode?:
           const diggable = buildMode && canDig(b, c, r) && !b.project;
           const isSel = sel && sel.c === c && sel.r === r;
           return (
-            <g key={`${c}-${r}`} onClick={() => onCell(c, r)} class="cell">
+            <g
+              key={`${c}-${r}`}
+              onClick={() => onCell(c, r)}
+              class="cell"
+              {...(k === 'hueco' || diggable
+                ? {
+                    tabindex: 0,
+                    role: 'button',
+                    'aria-label': `Nivel −${r}, columna ${c + 1}: ${m ? moduleName(m.type) : k === 'hueco' ? C.cells.hueco : C.cells[k]}`,
+                    onKeyDown: (e: KeyboardEvent) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), onCell(c, r)),
+                  }
+                : {})}
+            >
               {k === 'hueco' ? (
                 <g>
                   <rect x={x} y={y} width={CW} height={CH} fill={night && !lit ? '#0f0d0b' : '#221d18'} />

@@ -110,7 +110,7 @@ export const ITEMS: Record<string, ItemData> = {
 export const EXCAVATOR = { deliveryH: 6, durationH: 24, speedMult: 8, rockMult: 3 } as const;
 
 /** Tiempo de manipulación por unidad comprada (cargar, pagar), h. Simplificación. */
-export const HANDLING_H_PER_UNIT = 0.02;
+export const HANDLING_H_PER_UNIT = 0.03;
 
 /** Pánico: fracción máxima de existencias que se agota justo antes del evento; subida de precio. */
 export const PANIC = { maxDrain: 0.85, hotMult: 1.6, priceSurge: 0.5 } as const;

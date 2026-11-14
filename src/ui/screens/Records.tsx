@@ -9,7 +9,7 @@ export function RecordsScreen() {
   const causes = Object.entries(r.causes).sort((a, b) => b[1] - a[1]);
   const maxCause = Math.max(1, ...causes.map(([, n]) => n));
   return (
-    <div class="screen records">
+    <div role="main" class="screen records">
       <header class="topbar">
         <button class="icon-btn" aria-label={T.common.back} onClick={() => (screen.value = 'menu')}>
           ←

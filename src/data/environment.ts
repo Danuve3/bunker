@@ -9,7 +9,7 @@ export const FALLOUT = {
   decayExponent: 1.2,
   /** Tasa exterior a H+1 (mSv/h). 1 R/h ≈ 10 mSv/h. Rango jugable para zonas a sotavento
    *  a decenas de km (simplificación de los mapas de Glasstone cap. 9). */
-  r1Range: [100, 2500] as [number, number],
+  r1Range: [150, 4000] as [number, number],
   /** Llegada de la lluvia radiactiva tras la detonación (h). */
   arrivalH: 1,
   /** Fracción de partículas que entra con aire NO filtrado, por m³/h de caudal (simplificación). */

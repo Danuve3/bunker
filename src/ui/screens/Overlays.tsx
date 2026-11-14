@@ -124,7 +124,7 @@ export function DeathScreen({ s }: { s: GameState }) {
   const threat = s.threat.variant ? C.variants[s.threat.variant].name : C.threats[s.threat.primary].name;
   const last = s.log.slice(-6, -1);
   return (
-    <div class="screen death">
+    <div role="main" class="screen death">
       <div class="death-inner">
         <p class="card-kind">{threat}</p>
         <h1>{T.death.title}</h1>

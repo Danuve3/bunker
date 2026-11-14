@@ -128,7 +128,7 @@ export function CrisisScreen({ s }: { s: GameState }) {
   const sec = s.threat.secondary && s.phase >= (s.threat.secondaryFromPhase ?? 99) ? s.threat.secondary : null;
   const threatName = (s.threat.variant ? C.variants[s.threat.variant].name : C.threats[s.threat.primary].name) + (sec ? ` + ${C.threats[sec].name}` : '');
   return (
-    <div class="screen crisis">
+    <div role="main" class="screen crisis">
       <TopBar
         left={
           <span>

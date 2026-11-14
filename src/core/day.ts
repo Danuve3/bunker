@@ -237,7 +237,7 @@ function endOfDay(s: GameState, rng: Rng, bossDay: boolean) {
 
   // Saqueadores nocturnos
   const risk = looterRisk(s);
-  if (risk > 0 && rng.chance(Math.min(0.6, risk * 0.3))) {
+  if (risk > 0 && rng.chance(Math.min(0.6, risk * 0.35))) {
     const guard = (s.plan.night === 'guardia' ? 0.25 : 0) + (has(b, 'periscopio') ? 0.1 : 0);
     const vig = modValue(s, 'looters') < 0 ? 0.15 : 0;
     if (rng.chance(clamp(doorStrength(b) + guard + vig + pm.doorAdd, 0.05, 0.95))) log(s, 'log.saqueo_rechazado', undefined, 'warn');
@@ -246,7 +246,7 @@ function endOfDay(s: GameState, rng: Rng, bossDay: boolean) {
       const w = Math.round((s.inv.agua ?? 0) * 0.12);
       s.inv.agua -= w;
       sv.morale = clamp(sv.morale - 6, 0, 100);
-      if (rng.chance(0.3)) sv.injuries = clamp(sv.injuries + rng.int(8, 20) * pm.injuryMult, 0, 100);
+      if (rng.chance(0.4)) sv.injuries = clamp(sv.injuries + rng.int(10, 25) * pm.injuryMult, 0, 100);
       log(s, 'log.saqueo', { kcal: Math.round(k), agua: w }, 'bad');
     }
   }

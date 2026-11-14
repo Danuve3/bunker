@@ -24,7 +24,7 @@ export function SettingsScreen({ onTutorial }: { onTutorial: () => void }) {
   const s = settings.value;
   const [confirmWipe, setConfirmWipe] = useState(false);
   return (
-    <div class="screen settings">
+    <div role="main" class="screen settings">
       <header class="topbar">
         <button class="icon-btn" aria-label={T.common.back} onClick={() => (screen.value = 'menu')}>
           ←

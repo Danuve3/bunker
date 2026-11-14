@@ -12,6 +12,8 @@ export interface ThreatData {
   gridDownAfterH: [number, number];
   waterMainsDownAfterH: [number, number];
   infectionPressure: number;
+  /** Contagio por aire interior sin filtrar (aerosoles de vecinos), prob./h. Simplificación. */
+  insideInfection?: number;
   looterPressure: number;
 }
 
@@ -32,9 +34,10 @@ export const THREATS: Record<ThreatId, ThreatData> = {
     ...TEMPLATE,
     prepH: [72, 200],
     budget: [2500, 6500],
-    gridDownAfterH: [96, 480],
-    waterMainsDownAfterH: [168, 720],
-    infectionPressure: 0.03,
+    gridDownAfterH: [48, 240],
+    waterMainsDownAfterH: [72, 360],
+    infectionPressure: 0.04,
+    insideInfection: 0.0006,
     looterPressure: 0.1,
   },
   // Apagón prolongado y colapso del orden: la red cae ya, el agua en horas.
@@ -45,7 +48,7 @@ export const THREATS: Record<ThreatId, ThreatData> = {
 
 export const CLIMATE: Record<ClimateVariant, Partial<ThreatData>> = {
   // Ola de frío extremo: avisos meteorológicos con 1-4 días.
-  frio: { prepH: [24, 96], baseTempC: [-24, -12], gridDownAfterH: [0, 48], waterMainsDownAfterH: [8, 24], looterPressure: 0.12 },
+  frio: { prepH: [24, 96], baseTempC: [-20, -10], gridDownAfterH: [0, 48], waterMainsDownAfterH: [8, 24], looterPressure: 0.12 },
   // Inundación: avisos de horas a 3 días; red y agua comprometidas.
   inundacion: { prepH: [12, 60], baseTempC: [6, 14], waterMainsDownAfterH: [0, 6], looterPressure: 0.18 },
   // Tormenta solar: una eyección de masa coronal tarda ~15 h a 3 días en llegar (noaa_swpc).
