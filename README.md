@@ -91,6 +91,6 @@ La lista completa con enlaces está en `src/data/sources.ts`. Los valores que so
 - [x] H4: 76 eventos + 9 encuentros + 14 crisis finales (39 con «Dato real») y amenazas secundarias encadenadas
 - [x] H5: 34 perks (1 de 3), récords y estadísticas, racha del Búnker del día, compartir
 - [x] H6: PWA completa (manifest, iconos y splash generados, Service Worker offline versionado, aviso de actualización, instalar)
-- [ ] H7: audio generativo y vibración
+- [x] H7: audio generativo (viento, lluvia, generador, Geiger, latido, efectos, alarmas) y vibración, con ajustes
 - [ ] H8: tutorial guiado
 - [ ] H9: balanceo, accesibilidad y pulido

@@ -69,6 +69,9 @@ export function Menu() {
           <button class="btn ghost" onClick={() => (screen.value = 'howto')}>
             {T.menu.howTo}
           </button>
+          <button class="btn ghost" onClick={() => (screen.value = 'settings')}>
+            {T.menu.settings}
+          </button>
         </div>
       </div>
       {iosOpen && (

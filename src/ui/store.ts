@@ -6,8 +6,10 @@ import { dailySeed, seedFromEntropy } from '../core/rng';
 import type { GameMode, GameState } from '../core/types';
 import { load, remove, save } from '../platform/storage';
 import { emptyRecords, loadRecords, recordRun, type Records } from '../platform/records';
+import { feedback } from './feedback';
+import { loadSettings } from './settings';
 
-export type Screen = 'menu' | 'game' | 'howto' | 'records';
+export type Screen = 'menu' | 'game' | 'howto' | 'records' | 'settings';
 
 export const game = signal<GameState | null>(null);
 export const screen = signal<Screen>('menu');
@@ -34,6 +36,7 @@ export function showToast(msg: string) {
 const RUN_KEY = 'run';
 
 export async function boot() {
+  await loadSettings();
   records.value = await loadRecords();
   const s = await load<GameState>(RUN_KEY);
   if (s && s.v === SAVE_VERSION && s.stage !== 'dead') savedRun.value = s;
@@ -65,6 +68,8 @@ export function start(seed: string, mode: GameMode) {
 }
 
 export const startDaily = () => start(dailySeed(new Date()), 'diaria');
+/** Tutorial guiado (hito 8): partida corta con semilla fija. */
+export const startTutorial = () => start('TUTORIAL', 'tutorial');
 
 export function resume() {
   if (!savedRun.value) return;
@@ -87,6 +92,7 @@ export function act(a: Action) {
       });
   } else void save(RUN_KEY, s);
   if ((a.t === 'advanceDay' || (a.t === 'choose' && s0.stage === 'boss')) && s.lastReport) showReport.value = true;
+  feedback(s0, s, a);
 }
 
 export function toMenu() {
