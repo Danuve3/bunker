@@ -1,0 +1,33 @@
+name: CI
+
+# El despliegue lo hace GitHub Pages directamente desde la rama main (raíz):
+# Settings → Pages → Deploy from a branch → main → / (root).
+# Este workflow solo comprueba que los tests pasan y que la build de la raíz está al día.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: La build publicada en la raíz está al día
+        run: |
+          if [ -n "$(git status --porcelain -- index.html assets sw.js manifest.webmanifest icons)" ]; then
+            git status --porcelain -- index.html assets sw.js manifest.webmanifest icons
+            echo "::error::La build de la raíz no coincide con el código. Ejecuta 'npm run build' y sube los cambios."
+            exit 1
+          fi

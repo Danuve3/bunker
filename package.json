@@ -6,8 +6,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build",
-    "preview": "vite preview",
+    "build": "tsc --noEmit && node scripts/clean-build.mjs && vite build",
+    "preview": "vite preview --outDir ..",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",

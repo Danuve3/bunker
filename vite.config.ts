@@ -5,7 +5,7 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 
 /**
- * Genera dist/sw.js a partir de src/pwa/sw-template.js con la lista de precarga
+ * Genera sw.js a partir de src/pwa/sw-template.js con la lista de precarga
  * (todos los archivos del build + public) y una versión derivada de su contenido.
  */
 function serviceWorker(): Plugin {
@@ -29,17 +29,27 @@ function serviceWorker(): Plugin {
   };
 }
 
-// La app se publica en https://danuve3.github.io/bunker/ → base '/bunker/'.
+/**
+ * Despliegue: GitHub Pages "Deploy from a branch" → main → / (raíz).
+ * La fuente está en web/ y src/; `npm run build` escribe el sitio compilado en la RAÍZ
+ * del repositorio (index.html, assets/, sw.js, manifest.webmanifest, icons/), que es lo
+ * que Pages sirve en https://danuve3.github.io/bunker/. Rutas relativas (base './').
+ */
 export default defineConfig({
-  base: '/bunker/',
+  root: 'web',
+  base: './',
   plugins: [preact(), serviceWorker()],
   define: { __APP_VERSION__: JSON.stringify(process.env.npm_package_version ?? 'dev') },
+  server: { fs: { allow: ['..'] } },
   build: {
+    outDir: '..',
+    emptyOutDir: false, // ¡la raíz es el repositorio! scripts/clean-build.mjs borra solo lo generado
     target: 'es2020',
     assetsInlineLimit: 0,
     sourcemap: false,
   },
   test: {
+    root: '.',
     environment: 'node',
     include: ['tests/**/*.test.ts'],
   },

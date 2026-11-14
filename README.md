@@ -32,7 +32,7 @@ npm install
 npm run dev
 ```
 
-Abre http://localhost:5173/bunker/
+Abre http://localhost:5173/
 
 ```bash
 npm test
@@ -41,6 +41,8 @@ npm test
 ```bash
 npm run build
 ```
+
+`npm run build` genera el sitio compilado **en la raíz del repositorio**, que es lo que publica GitHub Pages (ver «Despliegue»).
 
 ```bash
 npm run balance -- 300
@@ -60,6 +62,7 @@ node scripts/gen-icons.cjs
 - **Simulación pura y determinista** en `src/core/`, sin DOM. La interfaz solo llama a `dispatch(estado, acción) → estado`. El PRNG es **sfc32 sembrado con cyrb128** y su estado se guarda con la partida: misma semilla y mismas acciones dan exactamente la misma partida. La lógica de juego no usa `Math.random()`.
 
 ```
+web/           Fuente de la página: web/index.html y web/public/ (manifest, iconos, .nojekyll)
 src/core/      Simulación: estado, PRNG, sistemas horarios, fase 0, días, cartas, expediciones, perks
 src/data/      TODOS los valores numéricos, cada uno con su fuente o marcado como simplificación
 src/i18n/      Todos los textos en español (UI, contenido, 99 cartas), listos para traducir
@@ -69,6 +72,8 @@ src/platform/  IndexedDB con respaldo en localStorage, récords, compartir, vibr
 src/pwa/       Plantilla del Service Worker, registro, actualización e instalación
 scripts/       Bots, balanceo y generador de iconos
 tests/         Vitest: determinismo, regla 7-10, blindaje, CO₂, agua, almacén, expediciones, contenido, perks, récords
+
+index.html, assets/, sw.js, manifest.webmanifest, icons/, .nojekyll   ← GENERADOS por `npm run build` (no editar a mano)
 ```
 
 ### Sistemas simulados (hora a hora)
@@ -77,9 +82,21 @@ Hidratación (déficit en litros), energía (kcal por actividad según MET, tiri
 
 ## Despliegue
 
-Cada push a `main` ejecuta `.github/workflows/deploy.yml`: tests, build con `base: '/bunker/'` y publicación en GitHub Pages con `actions/upload-pages-artifact` y `actions/deploy-pages`.
+GitHub Pages publica **directamente la rama `main`, carpeta raíz**: *Settings → Pages → Build and deployment → Source: **Deploy from a branch** → Branch: **`main`** / **`/ (root)`***.
 
-**Configuración necesaria, una sola vez:** *Settings → Pages → Build and deployment → Source: **GitHub Actions***. Si está en "Deploy from branch", Pages sirve el código fuente sin compilar y la página sale en blanco.
+Por eso el sitio compilado vive en la raíz de `main`: `index.html`, `assets/`, `sw.js`, `manifest.webmanifest`, `icons/` y `.nojekyll` (este último evita que Jekyll procese los archivos). Todas las rutas son relativas (`base: './'`), así que funciona bajo `/bunker/` sin configuración extra.
+
+Flujo para publicar un cambio:
+
+```bash
+npm run build
+```
+
+```bash
+git add -A && git commit -m "…" && git push origin main
+```
+
+`npm run build` borra la build anterior de la raíz (`scripts/clean-build.mjs`, solo los archivos generados) y vuelve a compilar. El workflow `.github/workflows/ci.yml` **no despliega**: pasa los tests, compila y falla si la build subida en la raíz no coincide con el código (por si se olvida el `npm run build`).
 
 ### PWA
 

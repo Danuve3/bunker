@@ -7,7 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const { chromium } = require('playwright');
 
-const OUT = path.join(__dirname, '..', 'public', 'icons');
+const OUT = path.join(__dirname, '..', 'web', 'public', 'icons');
 fs.mkdirSync(OUT, { recursive: true });
 
 function iconSvg({ rounded }) {
